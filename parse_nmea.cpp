@@ -29,9 +29,6 @@ void Parse_NMEA::Parse(const QString &Text_NMEA)
     if(NMEA_D.GPGGA.longitude && NMEA_D.GPGGA.latitude)
         emit Parse_GPGGA_Signal(NMEA_D.GPGGA);
 
-    if(NMEA_D.ACCEL.Status == 'A')
-        emit Parse_ACCEL_Signal(NMEA_D.ACCEL);
-
     if(NMEA_D.POHPR.time && NMEA_D.POHPR.status)
         emit Parse_POHPR_Signal(NMEA_D.POHPR);
 
@@ -66,20 +63,6 @@ void Parse_NMEA::Parse(const QString &Text_NMEA)
         emit Parse_GPZDA_Signal(NMEA_D.GPZDA);
 }
 
-void Parse_NMEA::Parse_Accel_Slot(const QString &Text_NMEA, struct ACCEL &ACCEL)
-{
-    char data[4096];
-    memset(data, 0, 4096);
-
-    strcpy(data, Text_NMEA.toLocal8Bit().data());
-
-    struct NMEA_Data N;
-    N.ACCEL.X_V = 1;
-    nmea_recv(&ctx, data, strlen(data), &N);
-
-    ACCEL = N.ACCEL;
-}
-
 Parse_NMEA::~Parse_NMEA()
 {
     Settings.beginGroup("/NMEA_sentence");
@@ -93,7 +76,6 @@ Parse_NMEA::~Parse_NMEA()
         Settings.setValue("/PNVGS",   NMEA_Data_Settings.PNVGS.Signal);
         Settings.setValue("/PNVGR",   NMEA_Data_Settings.PNVGR.Status);
         Settings.setValue("/RMC",     NMEA_Data_Settings.RMC.Time);
-        Settings.setValue("/ACCEL",   NMEA_Data_Settings.ACCEL.X_V);
     Settings.endGroup();
 }
 
@@ -110,7 +92,6 @@ void Parse_NMEA::Read_Settings()
         NMEA_Data_Settings.PNVGS.Signal     = Settings.value("/PNVGS").toBool();
         NMEA_Data_Settings.PNVGR.Status     = Settings.value("/RMC").toBool();
         NMEA_Data_Settings.RMC.Time         = Settings.value("/GPGGA").toBool();
-        NMEA_Data_Settings.ACCEL.X_V        = Settings.value("/ACCEL").toBool();
     Settings.endGroup();
 
     Settings.beginGroup("/NMEA_sentence");
@@ -124,7 +105,6 @@ void Parse_NMEA::Read_Settings()
         NMEA_Actions[7] ->setChecked(Settings.value("/PNVGS").toBool());
         NMEA_Actions[8] ->setChecked(Settings.value("/RMC").toBool());
         NMEA_Actions[9] ->setChecked(Settings.value("/GPGGA").toBool());
-        NMEA_Actions[10]->setChecked(Settings.value("/ACCEL").toBool());
     Settings.endGroup();
 }
 
@@ -140,7 +120,6 @@ void Parse_NMEA::NMEA_Select()
     menuNMEA->addAction("PNVGS");
     menuNMEA->addAction("PNVGR");
     menuNMEA->addAction("RMC");
-    menuNMEA->addAction("ACCEL");
 
     NMEA_Actions = menuNMEA->actions();
 
@@ -201,27 +180,4 @@ void Parse_NMEA::OnOFF_NMEA()
             NMEA_Data_Settings.RMC.Time = 1;
         else
             NMEA_Data_Settings.RMC.Time = 0;
-
-        if(NMEA_Actions[10]->isChecked())
-            NMEA_Data_Settings.ACCEL.X_V = 1;
-        else
-            NMEA_Data_Settings.ACCEL.X_V = 0;
-}
-
-QByteArray Parse_NMEA::Make_NMEA(struct ACCEL &Accel)
-{
-    char nmea[100];
-    NmeaFormat(nmea, sizeof nmea, "ACCEL,%0.3f,%02d,%02d,%02d,%02d,%02d,%02d",
-                  Accel.T,
-                  (int) Accel.X_V,
-                  (int) Accel.Y_V,
-                  (int) Accel.Z_V,
-                  (int) Accel.X_G,
-                  (int) Accel.Y_G,
-                  (int) Accel.Z_G
-                  );
-    QByteArray Data;
-    Data.push_back(nmea);
-
-    return Data;
 }

@@ -340,36 +340,6 @@ static void rx_pnvgr(BmNmeaMessage *msg, struct NMEA_Data *NMEA_Data)
     }
 }
 
-static void rx_accel(BmNmeaMessage *msg, struct NMEA_Data *NMEA_Data)
-{
-    if(NMEA_Data->ACCEL.X_V)
-    {
-        NMEA_Data->ACCEL.X_V = 0;
-        NMEA_Data->ACCEL.Status = 'A';
-
-        int i = strlen(msg->data) + 1;
-        NMEA_Data->ACCEL.T          = stof(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.X_V        = (int32_t)atoi(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.Y_V        = (int32_t)atoi(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.Z_V        = (int32_t)atoi(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.X_G        = (int32_t)atoi(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.Y_G        = (int32_t)atoi(&msg->data[i]);
-
-        i += strlen(&msg->data[i]) + 1;
-        NMEA_Data->ACCEL.Z_G        = (int32_t)atoi(&msg->data[i]);
-    }
-}
-
 static void rx_porzv(BmNmeaMessage *msg, struct NMEA_Data *NMEA_Data)
 {
         int i = strlen(msg->data) + 1;
@@ -411,7 +381,6 @@ static struct {
     {"PNVGVER", rx_pnvgver},
     {"PNVGS",   rx_pnvgs},
     {"PNVGR",   rx_pnvgr},
-    {"ACCEL",   rx_accel},
     {"PORZV",   rx_porzv},
     {"**ZDA",   rx_gpzda}
 };

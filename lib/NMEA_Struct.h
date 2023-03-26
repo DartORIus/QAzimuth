@@ -98,17 +98,6 @@ struct GPRMC{
     char        Navigation_Status;
 };
 
-struct ACCEL{
-    char    Status;
-    float   T;
-    int32_t X_V;
-    int32_t Y_V;
-    int32_t Z_V;
-    int32_t X_G;
-    int32_t Y_G;
-    int32_t Z_G;
-};
-
 struct PORZV{
     char    Stat;
     int     Time;
@@ -132,7 +121,6 @@ struct NMEA_Data{
     struct PNVGS    PNVGS;
     struct PNVGR    PNVGR;
     struct GPRMC    RMC;
-    struct ACCEL    ACCEL;
     struct PORZV    PORZV;
     struct GPZDA    GPZDA;
 };

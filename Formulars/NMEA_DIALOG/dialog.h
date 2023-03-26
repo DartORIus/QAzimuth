@@ -55,7 +55,6 @@ class Dialog : public QWidget
 
 signals:
     void Write_NMEA_Data_SIGNAL(const QString &);
-    void Write_BINR_Data_SIGNAL(const QString &);
     void Parse_NMEA_Signal(const QString &);
     void Clear_Signal();
     void Push_Read_Buton_Signal(bool);
@@ -83,7 +82,6 @@ protected:
 
 private:
     bool localEchoEnabled;
-    QComboBox *Protocol_Choice;
     QLabel *Protocol_Znak;
     QLabel *Control_Sum_Label;
     QString NMEA_Text;
@@ -128,9 +126,7 @@ private slots:
     void Clear_Slot();
 
     void Control_Sum(const QString &);
-    void Show_BINR_Text(const QByteArray &);
     void putData(void);
-    void NMEA_BINR_SLOT(int);
 };
 
 #endif // CONSOLE_H

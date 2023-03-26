@@ -24,14 +24,11 @@ signals:
     void Parse_PNVGS_Signal(const struct PNVGS &);
     void Parse_PNVGR_Signal(const struct PNVGR &);
     void Parse_GPRMC_Signal(const struct GPRMC &);
-    void Parse_ACCEL_Signal(const struct ACCEL &);
     void Parse_POUGT_Signal(const struct POUGT &);
     void Parse_PORZV_Signal(const struct PORZV &);
     void Parse_GPZDA_Signal(const struct GPZDA &);
 public slots:
     void Parse(const QString &);
-    void Parse_Accel_Slot(const QString &, struct ACCEL&);
-    QByteArray Make_NMEA(struct ACCEL &);
     void OnOFF_NMEA();
 private:
     struct NMEA_Data NMEA_D, NMEA_Data_Settings;

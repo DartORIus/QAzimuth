@@ -20,7 +20,6 @@ private:
     Ui::XY_Area *ui;
     XY_Widget *XV_Wid, *XG_Wid, *YV_Wid, *YG_Wid, *ZV_Wid, *ZG_Wid;
 public slots:
-    void Parse_ACCEL_Slot(const struct ACCEL &);
     void Clear();
 protected:
     void resizeEvent(QResizeEvent *);

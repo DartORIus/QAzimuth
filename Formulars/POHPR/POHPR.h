@@ -14,8 +14,6 @@
 #include <lib/NMEA_Struct.h>
 #include <Graphic/graphic.h>
 
-#include <Formulars/Accel_Formular.h>
-
 class POHPR_W : public Graphic
 {
     Q_OBJECT

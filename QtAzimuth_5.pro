@@ -28,7 +28,6 @@ SOURCES += \
     Formulars/Koord/Coord_QW.cpp \
     Formulars/Koord/Visual_Coord.cpp \
     Formulars/NMEA_Formular/NMEA_Formular.cpp \
-    Formulars/Main_Window/language.cpp \
     Formulars/NMEA_DIALOG/dialog.cpp \
     Formulars/POUGT/POUGT_Formular.cpp \
     Formulars/POHPR/POHPR.cpp \
@@ -38,10 +37,6 @@ SOURCES += \
     Graphic/graphic.cpp \
     Graphic/Graphic_Widget.cpp \
     Formulars/RMC_Formular.cpp \
-    Formulars/Accel_Formular.cpp \
-    Formulars/Com_Accel/Com_Accel.cpp \
-    Formulars/Com_Accel/Com_Accel_Graphic.cpp \
-    Formulars/Gyro_Formular.cpp \
     Formulars/XY_Widget/XY_Widget.cpp \
     Formulars/XY_Widget/XY_Graphic.cpp \
     Formulars/XY_Widget/XY_Area.cpp
@@ -61,7 +56,6 @@ HEADERS  += \
     Formulars/Koord/Coord_QW.h \
     Formulars/Koord/Visual_Coord.h \
     Formulars/NMEA_Formular/NMEA_Formular.h \
-    Formulars/Main_Window/language.h \
     Formulars/NMEA_DIALOG/dialog.h \
     Formulars/POUGT/POUGT_Formular.h \
     Formulars/POHPR/POHPR.h \
@@ -71,10 +65,6 @@ HEADERS  += \
     Graphic/graphic.h \
     Graphic/Graphic_Widget.h \
     Formulars/RMC_Formular.h \
-    Formulars/Accel_Formular.h \
-    Formulars/Com_Accel/Com_Accel.h \
-    Formulars/Com_Accel/Com_Accel_Graphic.h \
-    Formulars/Gyro_Formular.h \
     Formulars/XY_Widget/XY_Widget.h \
     Formulars/XY_Widget/XY_Graphic.h \
     Formulars/XY_Widget/XY_Area.h
@@ -87,7 +77,6 @@ RESOURCES += \
 FORMS += \
     Formulars/Main_Window/settingsdialog.ui \
     Formulars/Main_Window/mainwindow.ui \
-    Formulars/Com_Accel/Com_Accel.ui \
     Formulars/XY_Widget/XY_Widget.ui \
     Formulars/XY_Widget/XY_Area.ui
 

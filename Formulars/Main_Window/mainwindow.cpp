@@ -13,7 +13,7 @@
 #include "../show_parse.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), Settings("Navis-Ukraine/QAzimuth", "QAzimuth"), BINR_NMEA(0), read_Accel(false),
+    QMainWindow(parent), Settings("Navis-Ukraine/QAzimuth", "QAzimuth"),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -30,11 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *Coord_Action = ui->menuView->addAction("Coord");
     connect(Coord_Action, SIGNAL(triggered()), coord, SLOT(show()));
 
-    serial_1 = new QSerialPort(this);
-    serial_2 = new QSerialPort(this);
-
-    settings_1    = new SettingsDialog(Settings, QString("Port_1"));
-    settings_2    = new SettingsDialog(Settings, QString("Port_2"));
+    serial_1   = new QSerialPort(this);
+    settings_1 = new SettingsDialog(Settings, QString("Port_1"));
 
     parse_nmea = new Parse_NMEA(ui->menuNMEA);
 
@@ -63,22 +60,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     Show_parse *Show_Parse_NMEA = new Show_parse;
 
-    Accel_F = new Accel_Formular();
-    QAction *Accel_Action = ui->menuView->addAction("Accel");
-    connect(Accel_Action, SIGNAL(triggered()), Accel_F, SLOT(show()));
-
-    Gyro_F = new Gyro_Formular();
-    QAction *Gyro_Action = ui->menuView->addAction("Gyroscope");
-    connect(Gyro_Action, SIGNAL(triggered()), Gyro_F, SLOT(show()));
-
     RMC_F = new RMC_Formular();
     RMC_F->setWindowTitle("RMC");
     QAction *RMC_Action = ui->menuView->addAction("RMC");
     connect(RMC_Action, SIGNAL(triggered()), RMC_F, SLOT(show()));
-
-    Com_Accel_F = new Com_Accel();
-    QAction *Com_Accel_Action = ui->menuView->addAction("Com_Accel");
-    connect(Com_Accel_Action, SIGNAL(triggered()), Com_Accel_F, SLOT(show()));
 
     XY_Wid = new XY_Area();
     QAction *XY_graph_Actin = ui->menuView->addAction("XY_Formular");
@@ -97,22 +82,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(serial_1,           SIGNAL(readyRead()),
             this,               SLOT(readDatafromPort_1()));
 
-    connect(serial_2,           SIGNAL(error(QSerialPort::SerialPortError)),
-            this,               SLOT(handleError(QSerialPort::SerialPortError)));
-
-    connect(serial_2,           SIGNAL(readyRead()),
-            this,               SLOT(readDatafromPort_2()));
-
     connect(dialog,             SIGNAL(Write_NMEA_Data_SIGNAL(const QString &)),
             this,               SLOT(write_NMEA_Data_SLOT(const QString &)));
 
-    connect(dialog,             SIGNAL(Write_BINR_Data_SIGNAL(const QString &)),
-            this,               SLOT(write_BINR_Data_SLOT(const QString &)));
-
     connect(this,               SIGNAL(Show_NMEA_Text(const QByteArray &)),
             dialog,             SLOT(Show_NMEA_Text(const QByteArray &)));
-    connect(this,               SIGNAL(Show_BINR_Text(const QByteArray &)),
-            dialog,             SLOT(Show_BINR_Text(const QByteArray &)));
 
     connect(dialog,             SIGNAL(Parse_NMEA_Signal(const QString &)),
             parse_nmea,         SLOT(Parse(const QString &)));
@@ -132,37 +106,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(dialog,             SIGNAL(Clear_Signal()),
             XY_Wid,             SLOT(Clear()));
 
-    connect(dialog,             SIGNAL(Clear_Signal()),
-            Accel_F,            SLOT(Clear_Slot()));
-    connect(dialog,             SIGNAL(Push_Read_Buton_Signal(bool)),
-            Accel_F,            SLOT(Push_Read_Buton_Slot(bool)));
-    connect(dialog,             SIGNAL(Read_All_Button_Signal()),
-            Accel_F,            SLOT(Read_All_Button_Slot()));
-
-    connect(dialog,             SIGNAL(Clear_Signal()),
-            Gyro_F,             SLOT(Clear_Slot()));
-    connect(dialog,             SIGNAL(Push_Read_Buton_Signal(bool)),
-            Gyro_F,             SLOT(Push_Read_Buton_Slot(bool)));
-    connect(dialog,             SIGNAL(Read_All_Button_Signal()),
-            Gyro_F,             SLOT(Read_All_Button_Slot()));
-
     connect(pohpr,              SIGNAL(Find_Text_Signal(double)),
             dialog,             SLOT(Find_Signal_Slot(double)));
     connect(POUGT_F,            SIGNAL(Find_Text_Signal(double)),
             dialog,             SLOT(Find_Signal_Slot(double)));
     connect(RMC_F,              SIGNAL(Find_Text_Signal(double)),
             dialog,             SLOT(Find_Signal_Slot(double)));
-    connect(Accel_F,            SIGNAL(Find_Text_Signal(double)),
-            dialog,             SLOT(Find_Signal_Slot(double)));
-    connect(Gyro_F,             SIGNAL(Find_Text_Signal(double)),
-            dialog,             SLOT(Find_Signal_Slot(double)));
-
-    connect(Accel_F,            SIGNAL(Press_Cursor_Signal(QPoint)),
-            Gyro_F,             SLOT(Press_Cursor_Slot(QPoint)));
-    connect(Accel_F,            SIGNAL(Release_Cursor_Signal(QPoint)),
-            Gyro_F,             SLOT(Release_Cursor_Slot(QPoint)));
-    connect(Accel_F,            SIGNAL(Move_Cursor_Signal(QPoint)),
-            Gyro_F,             SLOT(Move_Cursor_Slot(QPoint)));
 
     connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR &)),
             Show_Parse_NMEA,    SLOT(Parse_POHPR_Slot(const POHPR &)));
@@ -197,14 +146,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
             pohpr,                          SLOT(Parse_POHPR_Slot(const POHPR &)));
 
-    connect(parse_nmea,                     SIGNAL(Parse_ACCEL_Signal(const ACCEL&)),
-            Accel_F,                        SLOT(Parse_ACCEL_Slot(const ACCEL&)));
-    connect(parse_nmea,                     SIGNAL(Parse_ACCEL_Signal(const ACCEL&)),
-            Gyro_F,                         SLOT(Parse_ACCEL_Slot(const ACCEL&)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_ACCEL_Signal(const ACCEL&)),
-            XY_Wid,                         SLOT(Parse_ACCEL_Slot(const ACCEL&)));
-
     connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR &)),
             this,                           SLOT(ZDA_Slot(const POHPR &)));
 
@@ -233,14 +174,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(dialog,     SIGNAL(Read_All_Button_Signal()),
             RMC_F,      SLOT(Read_All_Button_Slot()));
 
-    connect(parse_nmea,  SIGNAL(Parse_POHPR_Signal(const POHPR&)),
-            Com_Accel_F, SLOT(Parse_POHPR_Slot(const POHPR&)));
-    connect(Accel_F,     SIGNAL(Accel_Deg_SIGNAL(float, char)),
-            Com_Accel_F, SLOT(Accel_Deg_SLOT(float, char)));
-
-    connect(parse_nmea,  SIGNAL(Parse_POHPR_Signal(const POHPR&)),
-            this,        SLOT(ACCEL_TO_Dialog(const POHPR&)));
-
     ReadSettings();
 }
 
@@ -253,18 +186,14 @@ void MainWindow::closeEvent(QCloseEvent *)
 {
     WriteSettings();
     delete(settings_1);
-    delete(settings_2);
     delete(dialog);
     delete(pohpr);
     delete(coord);
     delete(CHT);
     delete(NMEA_Form);
     delete(POUGT_F);
-    delete(Accel_F);
-    delete(Gyro_F);
     delete(parse_nmea);
     delete(RMC_F);
-    delete(Com_Accel_F);
     delete(XY_Wid);
 }
 
@@ -277,7 +206,6 @@ void MainWindow::ReadSettings()
         pohpr       ->setHidden(Settings.value("/POHPR").toBool());
         NMEA_Form   ->setHidden(Settings.value("/NMEA_Formular").toBool());
         POUGT_F     ->setHidden(Settings.value("/POUGT_Formular").toBool());
-    //    Accel_F     ->setHidden(Settings.value("/Accel_Formular").toBool());
         RMC_F       ->setHidden(Settings.value("/RMC_Formular").toBool());
     Settings.endGroup();
 }
@@ -297,7 +225,6 @@ void MainWindow::WriteSettings()
         Settings.setValue("/POHPR",         pohpr->isHidden());
         Settings.setValue("/NMEA_Formular", NMEA_Form->isHidden());
         Settings.setValue("/POUGT_Formular",POUGT_F->isHidden());
-        Settings.setValue("/Accel_Formular",Accel_F->isHidden());
         Settings.setValue("/RMC_Formular",  RMC_F->isHidden());
     Settings.endGroup();
 }
@@ -351,56 +278,6 @@ void MainWindow::closeSerialPort_1()
     dialog->Disable_Enable_Send(false);
 }
 
-void MainWindow::openSerialPort_2()
-{
-    SettingsDialog::Settings p = settings_2->settings();
-    serial_2->setPortName(p.name);
-    if (serial_2->open(QIODevice::ReadWrite)) {
-        if (serial_2->setBaudRate(p.baudRate)
-                && serial_2->setDataBits(p.dataBits)
-                && serial_2->setParity(p.parity)
-                && serial_2->setStopBits(p.stopBits)
-                && serial_2->setFlowControl(p.flowControl)) {
-
-            dialog->setEnabled(true);
-            dialog->Read_Button_Settings(false);
-            dialog->setLocalEchoEnabled(p.localEchoEnabled);
-            ui->actionConnect_2->setEnabled(false);
-            ui->actionDisconnect_2->setEnabled(true);
-            ui->actionConfigure_2->setEnabled(false);
-            ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-                                       .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                       .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
-
-            dialog->Disable_Enable_Send(true);
-        } else {
-            serial_2->close();
-            QMessageBox::critical(this, tr("Error"), serial_2->errorString());
-
-            ui->statusBar->showMessage(tr("Open error"));
-        }
-    } else {
-        QMessageBox::critical(this, tr("Error"), serial_2->errorString());
-
-        ui->statusBar->showMessage(tr("Configure error"));
-    }
-}
-
-
-void MainWindow::closeSerialPort_2()
-{
-    serial_2->close();
-    ui->actionConnect_2->setEnabled(true);
-    ui->actionDisconnect_2->setEnabled(false);
-    ui->actionConfigure_2->setEnabled(true);
-    ui->statusBar->showMessage(tr("Disconnected"));
-    dialog->Read_Button_Settings(true);
-    //pohpr->Push_Read_Buton_Slot(false);
-
-    dialog->Disable_Enable_Send(false);
-}
-
-
 void MainWindow::about()
 {
     QString  date(__DATE__);
@@ -415,76 +292,15 @@ void MainWindow::about()
 
 void MainWindow::write_NMEA_Data_SLOT(const QString &str)
 {
-    BINR_NMEA = 0;
     QByteArray K = str.toLocal8Bit();
     serial_1->write(K);
 }
-
-void MainWindow::write_BINR_Data_SLOT(const QString &str)
-{
-    BINR_NMEA = 1;
-
-    quint8 Size = (quint8)str.size()/2;
-    quint8 *Z   = new quint8[Size];
-
-    QString N = str;
-
-    for(int i = 0; i < Size; i++)
-    {
-        N.resize(2);
-        Z[i] = N.toUInt(0, 16);
-        N = str;
-        N.remove(0, i*2+2);
-    }
-
-    QByteArray K(Size, 0);
-
-    memcpy(K.data(), Z, sizeof(quint8)*Size);
-
-    serial_1->write(K);
-
-    delete [] Z;
-}
-
-void MainWindow::write_BINR_Data_SLOT(const QByteArray &BINR)
-{
-    BINR_NMEA = 1;
-    serial_1->write(BINR);
-}
-
 
 void MainWindow::readDatafromPort_1()
 {
     QByteArray data = serial_1->readAll();
 
-  //  if(BINR_NMEA == false)
-    //    emit Show_NMEA_Text(data);
     dialog->Show_NMEA_Text(data);
-//    else
-   //     emit Show_BINR_Text(data);
-}
-
-void MainWindow::readDatafromPort_2()
-{
-    QByteArray data = serial_2->readAll();
-
-    dialog->Show_NMEA_Text_1(data);
-    QString Text  = QString::fromLocal8Bit(data);
-
-    parse_nmea->Parse_Accel_Slot(Text, Accel);
-
-    Accel_F->Filter_Accel(Accel);
-}
-
-void MainWindow::ACCEL_TO_Dialog(const struct POHPR &)
-{
-    struct ACCEL A = Accel_F->Make_NMEA();
-
-    if(A.Status == 'A')
-    {
-        QByteArray data = parse_nmea->Make_NMEA(A);
-        dialog->Show_NMEA_Text(data);
-    }
 }
 
 void MainWindow::Enable_Connect(bool Enable)
@@ -546,18 +362,15 @@ void MainWindow::Language_Change(QAction* )
 
 void MainWindow::ZDA_Slot(const struct POHPR &)
 {
-    read_Accel = true;
+
 }
 
 void MainWindow::initActionsConnections()
 {
     connect(ui->actionConnect_1,    SIGNAL(triggered()), this,        SLOT(openSerialPort_1()));
     connect(ui->actionDisconnect_1, SIGNAL(triggered()), this,        SLOT(closeSerialPort_1()));
-    connect(ui->actionConnect_2,    SIGNAL(triggered()), this,        SLOT(openSerialPort_2()));
-    connect(ui->actionDisconnect_2, SIGNAL(triggered()), this,        SLOT(closeSerialPort_2()));
     connect(ui->actionQuit,         SIGNAL(triggered()), this,        SLOT(close()));
     connect(ui->actionConfigure_1,  SIGNAL(triggered()), settings_1,  SLOT(show()));
-    connect(ui->actionConfigure_2,  SIGNAL(triggered()), settings_2,  SLOT(show()));
     //connect(ui->actionClear,      SIGNAL(triggered()), console,   SLOT(clear()));
     connect(ui->actionAbout,        SIGNAL(triggered()), this,        SLOT(about()));
     connect(ui->actionAboutQt,      SIGNAL(triggered()), qApp,        SLOT(aboutQt()));

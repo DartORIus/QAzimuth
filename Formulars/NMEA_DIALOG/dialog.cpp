@@ -29,11 +29,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
 
     Read_Dialog_ComboBox();
 
-    Protocol_Choice = new QComboBox();
-    QStringList Protocol_List;
-    Protocol_List << "$" << "0x10";
-    Protocol_Choice->addItems(Protocol_List);
-
     Protocol_Znak = new QLabel("*");
     Control_Sum_Label = new QLabel("00");
     Control_Sum_Label->setFrameStyle(QFrame::Sunken | QFrame::Panel);
@@ -90,7 +85,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
     Read_Spinbox->setSuffix(" ms");
 
     QHBoxLayout *QHB = new QHBoxLayout;
-    QHB->addWidget(Protocol_Choice);
     QHB->addWidget(ComboBox);
     QHB->addWidget(Protocol_Znak);
     QHB->addWidget(Control_Sum_Label);
@@ -161,8 +155,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
 
     connect(spin, SIGNAL(valueChanged(int)),   this, SLOT(Change_Slider(int)));
 
-    connect(Protocol_Choice, SIGNAL(currentIndexChanged(int)), this, SLOT(NMEA_BINR_SLOT(int)));
-
     connect(NMEA_F, SIGNAL(Send_NMEA_Signal(const QString&)), this, SLOT(Get_NMEA_SLOT(const QString)));
 }
 
@@ -208,25 +200,8 @@ void Dialog::Read_Dialog_ComboBox()
 
 }
 
-void Dialog::NMEA_BINR_SLOT(int click)
-{
-    ComboBox->clearEditText();
-    if(click == 0)
-    {
-        Protocol_Znak->setText("*");
-        Control_Sum_Label->show();
-    }
-    else
-    {
-        Protocol_Znak->setText("[10][03]");
-        Control_Sum_Label->hide();
-    }
-}
-
 void Dialog::Control_Sum(const QString &str)
 {
-  if(Protocol_Choice->currentIndex() == 0)
-    {
         qint8 nmeaCRC = 0;
 
         for (int i = 0; i < str.length(); i++)
@@ -244,23 +219,11 @@ void Dialog::Control_Sum(const QString &str)
         Control_Sum_Label->setText(B);
 
         NMEA_Text ="$"+str+"*"+B+"\r\n";
-    }
-    else
-    {
-        NMEA_Text ="10"+str+"1003";
-    }
 }
 
 void Dialog::putData(void)
 {
-    if(Protocol_Choice->currentIndex() == 0)
-    {
-        emit Write_NMEA_Data_SIGNAL(NMEA_Text);
-    }
-    else
-    {
-        emit Write_BINR_Data_SIGNAL(NMEA_Text);
-    }
+    emit Write_NMEA_Data_SIGNAL(NMEA_Text);
 }
 
 void Dialog::Show_NMEA_Text(const QByteArray &Byte)
@@ -283,25 +246,6 @@ void Dialog::Show_NMEA_Text_1(const QByteArray &Byte)
     Show_Text_1->insertPlainText(Text);
     Show_Text_1->moveCursor(QTextCursor::End);
 }
-
-
-void Dialog::Show_BINR_Text(const QByteArray &Byte)
-{
-        QString Hex_String;
-        for(int i = 0; i < Byte.size(); i++)
-        {
-            quint8 Z = Byte[i];
-            QString H = QString::number(Z, 16);
-            if(H.size() < 2)
-                H = "0"+ H;
-            Hex_String += H + " ";
-        }
-        Hex_String +="\r\n";
-        Hex_String = Hex_String.toUpper();
-        Show_Hex->moveCursor(QTextCursor::End);
-        Show_Hex->insertPlainText(Hex_String);
-}
-
 
 void Dialog::setLocalEchoEnabled(bool set)
 {
@@ -447,9 +391,11 @@ void Dialog::Read_File_Slot()
             Read_File_Button->click();
     }
     else
+    {
         Read_File_Button->click();
+    }
 
-        this->Show_NMEA_Text(data);
+    this->Show_NMEA_Text(data);
 }
 
 void Dialog::Open_File_Slot()

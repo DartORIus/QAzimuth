@@ -27,7 +27,6 @@ SOURCES += \
     Formulars/NMEA_DIALOG/higlighter.cpp \
     Formulars/Koord/Coord_QW.cpp \
     Formulars/Koord/Visual_Coord.cpp \
-    Formulars/NMEA_Formular/NMEA_Formular.cpp \
     Formulars/NMEA_DIALOG/dialog.cpp \
     Formulars/POUGT/POUGT_Formular.cpp \
     Formulars/POHPR/POHPR.cpp \
@@ -55,7 +54,6 @@ HEADERS  += \
     Formulars/NMEA_DIALOG/higlighter.h \
     Formulars/Koord/Coord_QW.h \
     Formulars/Koord/Visual_Coord.h \
-    Formulars/NMEA_Formular/NMEA_Formular.h \
     Formulars/NMEA_DIALOG/dialog.h \
     Formulars/POUGT/POUGT_Formular.h \
     Formulars/POHPR/POHPR.h \

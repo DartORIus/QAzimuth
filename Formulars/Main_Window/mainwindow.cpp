@@ -45,14 +45,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *pohpr_Action = ui->menuView->addAction("POHPR");
     connect(pohpr_Action, SIGNAL(triggered()), pohpr, SLOT(show()));
 
-    NMEA_Form = new QScrollArea();
-    NMEA_Form->setWidget(dialog->Get_NMEA_Formular());
-    NMEA_Form->setWindowTitle("NMEA Formular");
-    NMEA_Form->setFixedWidth(470);
-    NMEA_Form->setMaximumHeight(900);
-    QAction *Scroll_Action = ui->menuView->addAction("NMEA Formular");
-    connect(Scroll_Action, SIGNAL(triggered()), NMEA_Form, SLOT(show()));
-
     POUGT_F = new POUGT_Formular();
     POUGT_F->setWindowTitle("POUGT");
     QAction *pougt_Action = ui->menuView->addAction("POUGT");
@@ -120,27 +112,6 @@ MainWindow::MainWindow(QWidget *parent) :
             coord,              SLOT(Parse_GPGGA_Slot(const GPGGA&)));
 
     connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PODST(const POHPR&)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PONDM_Signal(const PONDM&)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PONDM(const PONDM&)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PORZA_Signal(const PORZA&)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PORZA(const PORZA&)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PNVGO_Signal(const PNVGO&)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PNVGO(PNVGO)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PNVGVER_Signal(const PNVGVER)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PNVGVER(PNVGVER)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PNVGS_Signal(const PNVGS)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PNVGS(PNVGS)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_PNVGR_Signal(const PNVGR)),
-            dialog->Get_NMEA_Formular(),    SLOT(Parse_PNVGR(PNVGR)));
-
-    connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
             CHT,                            SLOT(Parse_POHPR_Slot(const POHPR &)));
 
     connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
@@ -190,7 +161,6 @@ void MainWindow::closeEvent(QCloseEvent *)
     delete(pohpr);
     delete(coord);
     delete(CHT);
-    delete(NMEA_Form);
     delete(POUGT_F);
     delete(parse_nmea);
     delete(RMC_F);
@@ -204,7 +174,6 @@ void MainWindow::ReadSettings()
         coord       ->setHidden(Settings.value("/Coord").toBool());
         CHT         ->setHidden(Settings.value("/CHT").toBool());
         pohpr       ->setHidden(Settings.value("/POHPR").toBool());
-        NMEA_Form   ->setHidden(Settings.value("/NMEA_Formular").toBool());
         POUGT_F     ->setHidden(Settings.value("/POUGT_Formular").toBool());
         RMC_F       ->setHidden(Settings.value("/RMC_Formular").toBool());
     Settings.endGroup();
@@ -223,7 +192,6 @@ void MainWindow::WriteSettings()
         Settings.setValue("/Coord",         coord->isHidden());
         Settings.setValue("/CHT",           CHT->isHidden());
         Settings.setValue("/POHPR",         pohpr->isHidden());
-        Settings.setValue("/NMEA_Formular", NMEA_Form->isHidden());
         Settings.setValue("/POUGT_Formular",POUGT_F->isHidden());
         Settings.setValue("/RMC_Formular",  RMC_F->isHidden());
     Settings.endGroup();
@@ -330,7 +298,6 @@ void MainWindow::Show_Hide_Slot(bool enable)
         pohpr->hide();
         coord->hide();
         CHT->hide();
-        NMEA_Form->hide();
         POUGT_F->hide();
     }
 }

@@ -17,7 +17,6 @@
 #include <QDockWidget>
 
 #include "Show_Text.h"
-#include "../NMEA_Formular/NMEA_Formular.h"
 
 class Read_File_Thread : public QThread
 {
@@ -68,7 +67,6 @@ public:
     void setLocalEchoEnabled(bool);
     void Disable_Enable_Send(bool);
 
-    NMEA_Formular *Get_NMEA_Formular(void);
 public slots:
     void Find_Signal_Slot(double);
     void Read_Button_Settings(bool);
@@ -110,8 +108,6 @@ private:
     qint64 File_Size;
 
     QSettings *QA_Settings;
-
-    NMEA_Formular *NMEA_F;
 
     void Save_File_Funk(QString);
     void Read_Dialog_ComboBox();

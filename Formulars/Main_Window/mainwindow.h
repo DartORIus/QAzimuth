@@ -72,8 +72,6 @@ private:
     Parse_NMEA          *parse_NMEA;
     POHPR_W             *pohpr;
 
-    QScrollArea         *NMEA_Form;
-
     POUGT_Formular      *POUGT_F;
 
     RMC_Formular        *RMC_F;

@@ -123,8 +123,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
         QVB->addLayout(QhB);
     setLayout(QVB);
 
-    NMEA_F = new NMEA_Formular();
-
     read_thread = new Read_File_Thread();
 
     connect(ComboBox,  SIGNAL(editTextChanged(const QString &)),
@@ -154,8 +152,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
     connect(slider, SIGNAL(valueChanged(int)), this, SLOT(Peremotka_Slot(int)));
 
     connect(spin, SIGNAL(valueChanged(int)),   this, SLOT(Change_Slider(int)));
-
-    connect(NMEA_F, SIGNAL(Send_NMEA_Signal(const QString&)), this, SLOT(Get_NMEA_SLOT(const QString)));
 }
 
 Dialog::~Dialog()
@@ -171,8 +167,6 @@ Dialog::~Dialog()
     QA_Settings->setValue("/Send_NMEA_3", ComboBox->itemText(S-3));
     QA_Settings->setValue("/Send_NMEA_4", ComboBox->itemText(S-4));
     QA_Settings->endGroup();
-
-    delete(NMEA_F);
 }
 
 void Dialog::Read_Dialog_ComboBox()
@@ -525,9 +519,3 @@ void Dialog::Get_NMEA_SLOT(const QString &NMEA_String)
     ComboBox->setCurrentText(NMEA_String);
     Sent_NMEA->animateClick();
 }
-
-NMEA_Formular* Dialog::Get_NMEA_Formular(void)
-{
-    return NMEA_F;
-}
-

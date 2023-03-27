@@ -144,8 +144,9 @@ void Coord_QW::Parse_GPGGA_Slot(const struct GPGGA &GPGGA)
         Time[3] = Time[2];
         Time[2] = ':';
 
-        Time[8] = ' ';
-        Time[9] = ' ';
+        Time.push_back("  ");
+//        Time[8] = ' ';
+//        Time[9] = ' ';
 
     Time_VL->setText(this->Time);
 

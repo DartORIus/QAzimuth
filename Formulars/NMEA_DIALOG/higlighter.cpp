@@ -50,9 +50,7 @@ void Higlighter::highlightBlock(const QString &text)
         QRegularExpressionMatchIterator i = expression.globalMatch(text);
         while (i.hasNext()) {
             QRegularExpressionMatch match = i.next();
-            int startOffset = match.capturedStart();
-            int lengthOffset = match.capturedLength();
-            setFormat(startOffset, lengthOffset, rule.format);
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
 }

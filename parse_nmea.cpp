@@ -123,61 +123,83 @@ void Parse_NMEA::NMEA_Select()
 
     NMEA_Actions = menuNMEA->actions();
 
+    menuNMEA->addSeparator();
+    menuNMEA->addAction("Select all");
+
     for(int i=0; i<NMEA_Actions.size(); i++)
         NMEA_Actions[i]->setCheckable(true);
 
-    connect(menuNMEA, SIGNAL(triggered(QAction*)), this, SLOT(OnOFF_NMEA()));
+    connect(menuNMEA, SIGNAL(triggered(QAction*)), this, SLOT(OnOFF_NMEA(QAction*)));
 }
 
-void Parse_NMEA::OnOFF_NMEA()
+void Parse_NMEA::OnOFF_NMEA(QAction* action)
 {
-        if(NMEA_Actions[0]->isChecked())
-            NMEA_Data_Settings.GPGGA.time = 1;
-        else
-            NMEA_Data_Settings.GPGGA.time = 0;
+    if (action->text() == "Select all") {
+        bool isAllSelected = true;
+        for(int i=0; i<NMEA_Actions.size(); i++) {
+            if (!NMEA_Actions[i]->isChecked()) {
+                isAllSelected = false;
+                break;
+            }
+        }
+        if (isAllSelected) {
+            for(int i=0; i<NMEA_Actions.size(); i++) {
+                NMEA_Actions[i]->setChecked(false);
+            }
+        } else {
+            for(int i=0; i<NMEA_Actions.size(); i++) {
+                NMEA_Actions[i]->setChecked(true);
+            }
+        }
+    }
 
-        if(NMEA_Actions[1]->isChecked())
-            NMEA_Data_Settings.POHPR.time = 1;
-        else
-            NMEA_Data_Settings.POHPR.time = 0;
+    if(NMEA_Actions[0]->isChecked())
+        NMEA_Data_Settings.GPGGA.time = 1;
+    else
+        NMEA_Data_Settings.GPGGA.time = 0;
 
-        if(NMEA_Actions[2]->isChecked())
-            NMEA_Data_Settings.POUGT.satellite = 1;
-        else
-            NMEA_Data_Settings.POUGT.satellite = 0;
+    if(NMEA_Actions[1]->isChecked())
+        NMEA_Data_Settings.POHPR.time = 1;
+    else
+        NMEA_Data_Settings.POHPR.time = 0;
 
-        if(NMEA_Actions[3]->isChecked())
-            NMEA_Data_Settings.PONDM.Course = 1;
-        else
-            NMEA_Data_Settings.PONDM.Course = 0;
+    if(NMEA_Actions[2]->isChecked())
+        NMEA_Data_Settings.POUGT.satellite = 1;
+    else
+        NMEA_Data_Settings.POUGT.satellite = 0;
 
-        if(NMEA_Actions[4]->isChecked())
-            NMEA_Data_Settings.PORZA.Number = 1;
-        else
-            NMEA_Data_Settings.PORZA.Number = 0;
+    if(NMEA_Actions[3]->isChecked())
+        NMEA_Data_Settings.PONDM.Course = 1;
+    else
+        NMEA_Data_Settings.PONDM.Course = 0;
 
-        if(NMEA_Actions[5]->isChecked())
-            NMEA_Data_Settings.PNVGO.Signal = 1;
-        else
-            NMEA_Data_Settings.PNVGO.Signal = 0;
+    if(NMEA_Actions[4]->isChecked())
+        NMEA_Data_Settings.PORZA.Number = 1;
+    else
+        NMEA_Data_Settings.PORZA.Number = 0;
 
-        if(NMEA_Actions[6]->isChecked())
-            NMEA_Data_Settings.PNVGVER.Signal = 1;
-        else
-            NMEA_Data_Settings.PNVGVER.Signal = 0;
+    if(NMEA_Actions[5]->isChecked())
+        NMEA_Data_Settings.PNVGO.Signal = 1;
+    else
+        NMEA_Data_Settings.PNVGO.Signal = 0;
 
-        if(NMEA_Actions[7]->isChecked())
-            NMEA_Data_Settings.PNVGS.Signal = 1;
-        else
-            NMEA_Data_Settings.PNVGS.Signal = 0;
+    if(NMEA_Actions[6]->isChecked())
+        NMEA_Data_Settings.PNVGVER.Signal = 1;
+    else
+        NMEA_Data_Settings.PNVGVER.Signal = 0;
 
-        if(NMEA_Actions[8]->isChecked())
-            NMEA_Data_Settings.PNVGR.Status = 1;
-        else
-            NMEA_Data_Settings.PNVGR.Status = 0;
+    if(NMEA_Actions[7]->isChecked())
+        NMEA_Data_Settings.PNVGS.Signal = 1;
+    else
+        NMEA_Data_Settings.PNVGS.Signal = 0;
 
-        if(NMEA_Actions[9]->isChecked())
-            NMEA_Data_Settings.RMC.Time = 1;
-        else
-            NMEA_Data_Settings.RMC.Time = 0;
+    if(NMEA_Actions[8]->isChecked())
+        NMEA_Data_Settings.PNVGR.Status = 1;
+    else
+        NMEA_Data_Settings.PNVGR.Status = 0;
+
+    if(NMEA_Actions[9]->isChecked())
+        NMEA_Data_Settings.RMC.Time = 1;
+    else
+        NMEA_Data_Settings.RMC.Time = 0;
 }

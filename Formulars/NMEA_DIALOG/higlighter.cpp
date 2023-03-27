@@ -53,6 +53,6 @@ void Higlighter::highlightBlock(const QString &text)
             int startOffset = match.capturedStart();
             int lengthOffset = match.capturedLength();
             setFormat(startOffset, lengthOffset, rule.format);
-            }
+        }
     }
 }

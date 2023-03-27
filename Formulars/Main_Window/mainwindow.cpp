@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initActionsConnections();
 
-    connect(serial_1,           SIGNAL(error(QSerialPort::SerialPortError)),
+    connect(serial_1,           SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
             this,               SLOT(handleError(QSerialPort::SerialPortError)));
 
     connect(serial_1,           SIGNAL(readyRead()),
@@ -111,14 +111,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(parse_nmea,         SIGNAL(Parse_GPGGA_Signal(const GPGGA&)),
             coord,              SLOT(Parse_GPGGA_Slot(const GPGGA&)));
 
-    connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
-            CHT,                            SLOT(Parse_POHPR_Slot(const POHPR &)));
+    connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR&)),
+            CHT,                SLOT(Parse_POHPR_Slot(const POHPR &)));
 
-    connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR&)),
-            pohpr,                          SLOT(Parse_POHPR_Slot(const POHPR &)));
+    connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR&)),
+            pohpr,              SLOT(Parse_POHPR_Slot(const POHPR &)));
 
-    connect(parse_nmea,                     SIGNAL(Parse_POHPR_Signal(const POHPR &)),
-            this,                           SLOT(ZDA_Slot(const POHPR &)));
+    connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR &)),
+            this,               SLOT(ZDA_Slot(const POHPR &)));
 
     connect(parse_nmea, SIGNAL(Parse_POUGT_Signal(const POUGT&)),
             POUGT_F,    SLOT(Parse_POUGT_Slot(const POUGT&)));

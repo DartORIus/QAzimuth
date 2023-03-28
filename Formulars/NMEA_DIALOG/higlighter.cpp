@@ -7,38 +7,38 @@ Higlighter::Higlighter(QTextDocument *parent)
 
     QTextCharFormat keywordPOHPR;
     keywordPOHPR.setForeground(QColor(180, 0, 180));
-    rule.pattern = QRegExp("POHPR[^*]*");
+    rule.pattern = QRegularExpression("POHPR[^*]*");
     rule.format = keywordPOHPR;
     highlightingRules.append(rule);
 
     QTextCharFormat keywordGPGGA;
     keywordGPGGA.setForeground(QColor(0, 120, 120));
-    rule.pattern = QRegExp("[^$]*GGA[^*]*");
+    rule.pattern = QRegularExpression("[^$]*GGA[^*]*");
     rule.format = keywordGPGGA;
     highlightingRules.append(rule);
 
     QTextCharFormat keywordGPZDA;
     keywordGPZDA.setForeground(QColor(120, 180, 0));
-    rule.pattern = QRegExp("[^$]*ZDA[^*]*");
+    rule.pattern = QRegularExpression("[^$]*ZDA[^*]*");
     rule.format = keywordGPZDA;
     highlightingRules.append(rule);
 
     QTextCharFormat keywordGPHDT;
     keywordGPHDT.setForeground(QColor(20, 0, 180));
 
-    rule.pattern = QRegExp("GPHDT[^*]*");
+    rule.pattern = QRegularExpression("GPHDT[^*]*");
     rule.format = keywordGPHDT;
     highlightingRules.append(rule);
 
     QTextCharFormat keywordPORZV;
     keywordPORZV.setForeground(QColor(180, 120, 0));
-    rule.pattern = QRegExp("PORZV[^*]*");
+    rule.pattern = QRegularExpression("PORZV[^*]*");
     rule.format = keywordPORZV;
     highlightingRules.append(rule);
 
     QTextCharFormat keywordPOUGT;
     keywordPOUGT.setForeground(QColor(255, 20, 20));
-    rule.pattern = QRegExp("POUGT[^*]*");
+    rule.pattern = QRegularExpression("POUGT[^*]*");
     rule.format = keywordPOUGT;
     highlightingRules.append(rule);
 }
@@ -46,12 +46,11 @@ Higlighter::Higlighter(QTextDocument *parent)
 void Higlighter::highlightBlock(const QString &text)
 {
     foreach (const HighlightingRule &rule, highlightingRules) {
-         QRegExp expression(rule.pattern);
-         int index = expression.indexIn(text);
-         while (index >= 0) {
-             int length = expression.matchedLength();
-             setFormat(index, length, rule.format);
-             index = expression.indexIn(text, index + length);
-         }
-     }
+        QRegularExpression expression(rule.pattern);
+        QRegularExpressionMatchIterator i = expression.globalMatch(text);
+        while (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+        }
+    }
 }

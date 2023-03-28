@@ -4,6 +4,7 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QTextDocument>
+#include <QRegularExpression>
 
 class Higlighter : public QSyntaxHighlighter
 {
@@ -18,7 +19,7 @@ protected:
 private:
     struct HighlightingRule
     {
-        QRegExp pattern;
+        QRegularExpression pattern;
         QTextCharFormat format;
     };
     QVector<HighlightingRule> highlightingRules;

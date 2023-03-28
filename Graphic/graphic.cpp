@@ -173,6 +173,7 @@ QString Graphic::Time_QString(const float T)
 
     Time.push_back("00");
 
+
     Time[7] = Time[5];
     Time[6] = Time[4];
     Time[5] = ':';
@@ -180,8 +181,9 @@ QString Graphic::Time_QString(const float T)
     Time[3] = Time[2];
     Time[2] = ':';
 
-    Time[8] = ' ';
-    Time[9] = ' ';
+    Time.push_back("  ");
+//    Time[8] = ' ';
+//    Time[9] = ' ';
     return Time;
 }
 

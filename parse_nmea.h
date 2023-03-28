@@ -29,7 +29,7 @@ signals:
     void Parse_GPZDA_Signal(const struct GPZDA &);
 public slots:
     void Parse(const QString &);
-    void OnOFF_NMEA();
+    void OnOFF_NMEA(QAction*);
 private:
     struct NMEA_Data NMEA_D, NMEA_Data_Settings;
     BmUartProtoNmea ctx;

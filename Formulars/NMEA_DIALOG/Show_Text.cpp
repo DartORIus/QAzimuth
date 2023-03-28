@@ -97,7 +97,7 @@ int Show_Text_QW::lineNumberAreaWidth()
         ++digits;
     }
 
-    int space = 5 + fontMetrics().width(QLatin1Char('9')) * digits;
+    int space = 5 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 
     return space;
 }

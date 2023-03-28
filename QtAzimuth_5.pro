@@ -4,10 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-greaterThan(QT_MAJOR_VERSION, 5): QT += serialport
+QT       += core gui widgets serialport
 
 TARGET = QtAzimuth_5
 TEMPLATE = app
@@ -78,7 +75,7 @@ FORMS += \
     Formulars/XY_Widget/XY_Widget.ui \
     Formulars/XY_Widget/XY_Area.ui
 
-LIBS = -lQt5SerialPort -lm
+LIBS = -lm
 
 TRANSLATIONS += Languages/English.ts \
                 Languages/Ukrainian.ts
@@ -88,6 +85,6 @@ VERS=$$system(git tag) $$system(git log -n 1)
 QMAKE_CXXFLAGS += -Wextra -Wformat=2 -Winit-self -Wstrict-overflow=5 \
                   -Wcast-qual -Wcast-align -Wwrite-strings \
                   -Warray-bounds -Wno-missing-field-initializers \
-                  -std=c++11 -pedantic -D_POSIX_C_SOURCE=200809L
+                  -std=c++17 -pedantic -D_POSIX_C_SOURCE=200809L
 
 DEFINES += "'VERSION_STRING=\"$$system(git tag) $$system(git log -n 1)\"'"

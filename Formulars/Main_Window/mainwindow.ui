@@ -22,15 +22,13 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuCalls">
     <property name="title">
      <string>Calls</string>
     </property>
-    <addaction name="actionConnect_1"/>
-    <addaction name="actionDisconnect_1"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -38,7 +36,6 @@
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="actionConfigure_1"/>
     <addaction name="action"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -72,11 +69,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionConnect_1"/>
-   <addaction name="actionDisconnect_1"/>
-   <addaction name="actionConfigure_1"/>
    <addaction name="action"/>
-   <addaction name="action_3"/>
   </widget>
   <action name="actionAbout">
    <property name="text">
@@ -92,51 +85,6 @@
   <action name="actionAboutQt">
    <property name="text">
     <string>About Qt</string>
-   </property>
-  </action>
-  <action name="actionConnect_1">
-   <property name="icon">
-    <iconset resource="../../terminal.qrc">
-     <normaloff>:/images/connect.png</normaloff>:/images/connect.png</iconset>
-   </property>
-   <property name="text">
-    <string>C&amp;onnect</string>
-   </property>
-   <property name="toolTip">
-    <string>Connect to serial port</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-  </action>
-  <action name="actionDisconnect_1">
-   <property name="icon">
-    <iconset resource="../../terminal.qrc">
-     <normaloff>:/images/disconnect.png</normaloff>:/images/disconnect.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Disconnect</string>
-   </property>
-   <property name="toolTip">
-    <string>Disconnect from serial port</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+D</string>
-   </property>
-  </action>
-  <action name="actionConfigure_1">
-   <property name="icon">
-    <iconset resource="../../terminal.qrc">
-     <normaloff>:/images/settings.png</normaloff>:/images/settings.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Configure</string>
-   </property>
-   <property name="toolTip">
-    <string>Configure serial port</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+C</string>
    </property>
   </action>
   <action name="action">
@@ -192,11 +140,6 @@
   <action name="action_2">
    <property name="text">
     <string>Українська мова</string>
-   </property>
-  </action>
-  <action name="action_3">
-   <property name="text">
-    <string/>
    </property>
   </action>
  </widget>

@@ -17,11 +17,13 @@
 #include <Formulars/POUGT/POUGT_Formular.h>
 #include <Formulars/RMC_Formular.h>
 #include <Formulars/XY_Widget/XY_Area.h>
+#include "serialportaction.h"
+
+extern const QIcon ICON[5];
 
 namespace Ui {
 class MainWindow;
 }
-
 
 class Console;
 class SettingsDialog;
@@ -34,29 +36,43 @@ class MainWindow : public QMainWindow
 signals:
     void Show_NMEA_Text(const QByteArray&);
     void Sent_NMEA(QString&);
+
 public:
+    const QIcon ICON[5] = {QIcon::fromTheme("", QIcon(":/images/connect.png")),
+                        QIcon::fromTheme("", QIcon(":/images/disconnect.png")),
+                        QIcon::fromTheme("", QIcon(":/images/settings.png")),
+                        QIcon::fromTheme("", QIcon(":/images/add.png")),
+                        QIcon::fromTheme("", QIcon(":/images/application-exit.png"))};
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 public slots:
     void Show_Hide_Slot(bool);
+    void actTriggered(SerialPortAction*);
 private slots:
-    void openSerialPort_1();
-    void closeSerialPort_1();
+    void closeSerialPort(SerialPortAction* action);
     void about();
-    void write_NMEA_Data_SLOT(const QString &);
-    void readDatafromPort_1();
-    void handleError(QSerialPort::SerialPortError error);
-    void Enable_Connect(bool);
+    void write_NMEA_Data_SLOT(const QString &); // <- fix
+    void readDatafromPort();            // <- fix
+//    void handleError(QSerialPort::SerialPortError error);
+//    void Enable_Connect(bool);
+
     void Resize_Slot(const QSize &);
     void Language_Change(QAction*);
     void ZDA_Slot(const struct POHPR &);
 private:
+    void initAddAction();
+    void addPorts(unsigned int number = 1);
+    void addNewPort(SerialPortAction*);
+    void deletePort();
+    void openSerialPort(SerialPortAction*);
     void initActionsConnections();
     void NMEA_Select();
-
-    QSettings Settings;
     void ReadSettings();
     void WriteSettings();
+//    void initPort(unsigned int);
+
+    QSettings Settings;
 
     QStringList Languiges();
     QStringList Language_File;
@@ -67,16 +83,16 @@ private:
     Dialog              *dialog;
     Coord_QW            *coord;
     Course_Heeling_Trim *CHT;
-    SettingsDialog      *settings_1;
-    QSerialPort         *serial_1;
     Parse_NMEA          *parse_NMEA;
     POHPR_W             *pohpr;
-
     POUGT_Formular      *POUGT_F;
-
     RMC_Formular        *RMC_F;
-
     XY_Area             *XY_Wid;
+
+    unsigned int portsNumber;
+    SerialPortAction* paddAction;
+    QList<SettingsDialog*> serialPorts;
+    QList<QVector<SerialPortAction*>> serialPortActions;
 protected:
     void closeEvent(QCloseEvent *);
 };

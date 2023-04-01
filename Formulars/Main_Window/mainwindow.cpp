@@ -12,11 +12,11 @@
 #include "../../parse_nmea.h"
 #include "../show_parse.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent), Settings("Navis-Ukraine/QAzimuth", "QAzimuth"),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
+    Settings("Navis-Ukraine/QAzimuth", "QAzimuth"), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->mainToolBar->clear();
 
     dialog = new Dialog(Settings);
     setCentralWidget(dialog);
@@ -29,9 +29,6 @@ MainWindow::MainWindow(QWidget *parent) :
     coord->setWindowTitle("Coord");
     QAction *Coord_Action = ui->menuView->addAction("Coord");
     connect(Coord_Action, SIGNAL(triggered()), coord, SLOT(show()));
-
-    serial_1   = new QSerialPort(this);
-    settings_1 = new SettingsDialog(Settings, QString("Port_1"));
 
     parse_nmea = new Parse_NMEA(ui->menuNMEA);
 
@@ -61,21 +58,18 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *XY_graph_Actin = ui->menuView->addAction("XY_Formular");
     connect(XY_graph_Actin, SIGNAL(triggered()), XY_Wid, SLOT(show()));
 
-    ui->actionConnect_1->setEnabled(true);
-    ui->actionDisconnect_1->setEnabled(false);
-    ui->actionQuit->setEnabled(true);
-    ui->actionConfigure_1->setEnabled(true);
-
+    portsNumber = Settings.value("serialPorts/number", 1).toInt();
+    qDebug () << portsNumber;
+    addPorts(portsNumber);
+    initAddAction();
     initActionsConnections();
-
-    connect(serial_1,           SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
-            this,               SLOT(handleError(QSerialPort::SerialPortError)));
-
-    connect(serial_1,           SIGNAL(readyRead()),
-            this,               SLOT(readDatafromPort_1()));
+/**** have to be fixed *****/
+    connect(serialPorts[0]->getPort(),           SIGNAL(readyRead()),
+            this,               SLOT(readDatafromPort()));
 
     connect(dialog,             SIGNAL(Write_NMEA_Data_SIGNAL(const QString &)),
             this,               SLOT(write_NMEA_Data_SLOT(const QString &)));
+/************************************************/
 
     connect(this,               SIGNAL(Show_NMEA_Text(const QByteArray &)),
             dialog,             SLOT(Show_NMEA_Text(const QByteArray &)));
@@ -83,8 +77,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(dialog,             SIGNAL(Parse_NMEA_Signal(const QString &)),
             parse_nmea,         SLOT(Parse(const QString &)));
 
-    connect(dialog,             SIGNAL(Enable_Connect(bool)),
-            this,               SLOT(Enable_Connect(bool)));
+//    connect(dialog,             SIGNAL(Enable_Connect(bool)),
+//            this,               SLOT(Enable_Connect(bool)));
 
     connect(dialog,             SIGNAL(Show_Hide_Signal(bool)),
             this,               SLOT(Show_Hide_Slot(bool)));
@@ -156,7 +150,9 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *)
 {
     WriteSettings();
-    delete(settings_1);
+    for (unsigned int i = 0; i < portsNumber; ++i) {
+        delete(serialPorts[i]);
+    }
     delete(dialog);
     delete(pohpr);
     delete(coord);
@@ -197,48 +193,36 @@ void MainWindow::WriteSettings()
     Settings.endGroup();
 }
 
-void MainWindow::openSerialPort_1()
+void MainWindow::openSerialPort(SerialPortAction* action)
 {
-    SettingsDialog::Settings p = settings_1->settings();
-    serial_1->setPortName(p.name);
-    if (serial_1->open(QIODevice::ReadWrite)) {
-        if (serial_1->setBaudRate(p.baudRate)
-                && serial_1->setDataBits(p.dataBits)
-                && serial_1->setParity(p.parity)
-                && serial_1->setStopBits(p.stopBits)
-                && serial_1->setFlowControl(p.flowControl)) {
-
-            dialog->setEnabled(true);
-            dialog->Read_Button_Settings(false);
-            dialog->setLocalEchoEnabled(p.localEchoEnabled);
-            ui->actionConnect_1->setEnabled(false);
-            ui->actionDisconnect_1->setEnabled(true);
-            ui->actionConfigure_1->setEnabled(false);
-            ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-                                       .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                       .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl));
-
-            dialog->Disable_Enable_Send(true);
-        } else {
-            serial_1->close();
-            QMessageBox::critical(this, tr("Error"), serial_1->errorString());
-
-            ui->statusBar->showMessage(tr("Open error"));
-        }
+    QSerialPort::SerialPortError portError = action->getSettingsDialog()->openSerialPort();
+    if (portError == QSerialPort::NoError) {
+        SettingsDialog::portSettings p = action->getSettingsDialog()->settings();
+        dialog->setEnabled(true);
+        dialog->Read_Button_Settings(false);
+        dialog->setLocalEchoEnabled(p.localEchoEnabled);
+        action->setType(SerialPortAction::DISCONNECT);
+        action->setIcon(ICON[SerialPortAction::CONNECT]);
+//        ui->actionConfigure_1->setEnabled(false);     // <- fix
+        ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
+                                   .arg(p.name).arg(p.baudRate).arg(p.dataBits)
+                                   .arg(p.parity).arg(p.stopBits).arg(p.flowControl));
+        dialog->Disable_Enable_Send(true);
+    } else if (portError == QSerialPort::OpenError) {
+        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
+        ui->statusBar->showMessage(tr("Open error"));
     } else {
-        QMessageBox::critical(this, tr("Error"), serial_1->errorString());
-
+        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
         ui->statusBar->showMessage(tr("Configure error"));
     }
 }
 
-
-void MainWindow::closeSerialPort_1()
+void MainWindow::closeSerialPort(SerialPortAction* action)
 {
-    serial_1->close();
-    ui->actionConnect_1->setEnabled(true);
-    ui->actionDisconnect_1->setEnabled(false);
-    ui->actionConfigure_1->setEnabled(true);
+    action->getSettingsDialog()->getPort()->close();
+    action->setType(SerialPortAction::CONNECT);
+    action->setIcon(ICON[SerialPortAction::DISCONNECT]);
+//    ui->actionConfigure_1->setEnabled(true);      // <- fix
     ui->statusBar->showMessage(tr("Disconnected"));
     dialog->Read_Button_Settings(true);
     //pohpr->Push_Read_Buton_Slot(false);
@@ -255,35 +239,36 @@ void MainWindow::about()
 
     QMessageBox::about(this, tr("About QAzimuth") + " " + date,
                        tr("The <b>QAzimuth</b> demonstrates how to "
-                          "use the devices made by Navis-Ukraine. ") + "<b>" + Version + "</b>");
+                          "use the devices made by Navis-Ukraine. ") + "<br><b>" + Version + "</b>");
 }
 
+/* have to be changed */
 void MainWindow::write_NMEA_Data_SLOT(const QString &str)
 {
     QByteArray K = str.toLocal8Bit();
-    serial_1->write(K);
+    serialPorts[0]->getPort()->write(K);
 }
 
-void MainWindow::readDatafromPort_1()
+void MainWindow::readDatafromPort()
 {
-    QByteArray data = serial_1->readAll();
+    QByteArray data = serialPorts[0]->getPort()->readAll();
 
     dialog->Show_NMEA_Text(data);
 }
+/*********************************************/
 
-void MainWindow::Enable_Connect(bool Enable)
-{
-    ui->actionConnect_1->setEnabled(Enable);
-}
+//void MainWindow::Enable_Connect(bool Enable)
+//{
+//    ui->actionConnect_1->setEnabled(Enable);
+//}
 
-void MainWindow::handleError(QSerialPort::SerialPortError error)
-{
-    if (error == QSerialPort::ResourceError)
-    {
-        closeSerialPort_1();
-        QMessageBox::critical(this, tr("Critical Error"), serial_1->errorString());
-    }
-}
+//void MainWindow::portErrorOccurred(QSerialPort::SerialPortError error)
+//{
+//    if (error == QSerialPort::ResourceError)
+//    {
+//        emit handlePortError()
+//    }
+//}
 
 void MainWindow::Show_Hide_Slot(bool enable)
 {
@@ -332,12 +317,79 @@ void MainWindow::ZDA_Slot(const struct POHPR &)
 
 }
 
+void MainWindow::addPorts(unsigned int number)
+{
+    int portsExist = serialPortActions.size();
+    for (unsigned int i = portsExist; i < number + portsExist; ++i) {
+        serialPorts.push_back(new SettingsDialog(&Settings, i+1));
+
+//        connect(serialPorts[i]->getPort(), SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
+//                this, SLOT(handleError(QSerialPort::SerialPortError)));
+
+        serialPortActions.push_back({new SerialPortAction(ICON[SerialPortAction::DISCONNECT], "Connect serial port", SerialPortAction::CONNECT, serialPorts[i], this),
+                                                new SerialPortAction(ICON[SerialPortAction::SETTINGS], "Open port settings", SerialPortAction::SETTINGS, serialPorts[i], this),
+                                                new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete port", SerialPortAction::DELETE, serialPorts[i], this)});
+        for (int j = 0; j < serialPortActions[i].size(); ++j) {
+            ui->mainToolBar->addAction(serialPortActions[i][j]);
+
+            connect(serialPortActions[i][j], SIGNAL(triggered()), serialPortActions[i][j], SLOT(slot1()));
+            connect(serialPortActions[i][j], SIGNAL(wasTriggered(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+        }
+        ui->mainToolBar->addSeparator();
+    }
+}
+
+void MainWindow::addNewPort(SerialPortAction* action)
+{
+    ui->mainToolBar->removeAction(action);
+    portsNumber += 1;
+    addPorts(1);
+    initAddAction();
+}
+
+void MainWindow::initAddAction()
+{
+    paddAction = new SerialPortAction(ICON[SerialPortAction::ADD], "Add new serial port", SerialPortAction::ADD, nullptr, this);
+    ui->mainToolBar->addAction(paddAction);
+    connect(paddAction, SIGNAL(triggered()), paddAction, SLOT(slot1()));
+    connect(paddAction, SIGNAL(wasTriggered(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+}
+
+/* Currently removes only the last in the list serial port */
+void MainWindow::deletePort()
+{
+    if (serialPorts.size() <= 1) {
+        return;
+    }
+    ui->mainToolBar->removeAction(paddAction);
+
+    for (int j = 0; j < serialPortActions.last().size(); ++j) {
+        ui->mainToolBar->removeAction(serialPortActions.last()[j]);
+    }
+    serialPorts.pop_back();
+    serialPortActions.pop_back();
+    portsNumber -= 1;
+    initAddAction();
+}
+
+void MainWindow::actTriggered(SerialPortAction* action)
+{
+    if (action->getType() == SerialPortAction::CONNECT) {
+        openSerialPort(action);
+    } else if (action->getType() == SerialPortAction::SETTINGS) {
+        action->getSettingsDialog()->show();
+    } else if (action->getType() == SerialPortAction::DISCONNECT) {
+        closeSerialPort(action);
+    } else if (action->getType() == SerialPortAction::ADD) {
+        addNewPort(action);
+    } else if (action->getType() == SerialPortAction::DELETE) {
+        deletePort();
+    }
+}
+
 void MainWindow::initActionsConnections()
 {
-    connect(ui->actionConnect_1,    SIGNAL(triggered()), this,        SLOT(openSerialPort_1()));
-    connect(ui->actionDisconnect_1, SIGNAL(triggered()), this,        SLOT(closeSerialPort_1()));
     connect(ui->actionQuit,         SIGNAL(triggered()), this,        SLOT(close()));
-    connect(ui->actionConfigure_1,  SIGNAL(triggered()), settings_1,  SLOT(show()));
     //connect(ui->actionClear,      SIGNAL(triggered()), console,   SLOT(clear()));
     connect(ui->actionAbout,        SIGNAL(triggered()), this,        SLOT(about()));
     connect(ui->actionAboutQt,      SIGNAL(triggered()), qApp,        SLOT(aboutQt()));

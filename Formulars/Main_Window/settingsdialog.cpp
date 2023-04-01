@@ -47,18 +47,13 @@
 #include <QIntValidator>
 #include <QLineEdit>
 
-
-
-SettingsDialog::SettingsDialog(QSettings &Settings, QString p, QWidget *parent) :
-    QDialog(parent), Port(p),
-    ui(new Ui::SettingsDialog)
+SettingsDialog::SettingsDialog(QSettings* Settings, unsigned int n, QWidget* parent) :
+    QDialog(parent), portName("Port_"+QString::number(n)), savedSettings(Settings), ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
-    QA_Settings = &Settings;
-
-    intValidator = new QIntValidator(0, 4000000, this);
-
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
+
+    intValidator = new QIntValidator(1, 4000000, this);
 
     connect(ui->applyButton, SIGNAL(clicked()),
             this, SLOT(apply()));
@@ -69,15 +64,16 @@ SettingsDialog::SettingsDialog(QSettings &Settings, QString p, QWidget *parent) 
 
     fillPortsParameters();
     fillPortsInfo();
+    port = new QSerialPort();
 
-    QA_Settings->beginGroup(Port);
-        ui->serialPortInfoListBox->setCurrentIndex(QA_Settings->value("Port Number", "").toInt());
-        ui->baudRateBox->setCurrentIndex(QA_Settings->value("Baudrate", "").toInt());
-        ui->dataBitsBox->setCurrentIndex(QA_Settings->value("Data bits", "").toInt());
-        ui->parityBox->setCurrentIndex(QA_Settings->value("Parity", "").toInt());
-        ui->stopBitsBox->setCurrentIndex(QA_Settings->value("Stop bits", "").toInt());
-        ui->flowControlBox->setCurrentIndex(QA_Settings->value("Flow control", "").toInt());
-    QA_Settings->endGroup();
+    savedSettings->beginGroup("serialPorts/"+portName);
+        ui->serialPortInfoListBox->setCurrentIndex(savedSettings->value("Port Number", "").toInt());
+        ui->baudRateBox->setCurrentIndex(savedSettings->value("Baudrate", "").toInt());
+        ui->dataBitsBox->setCurrentIndex(savedSettings->value("Data bits", "").toInt());
+        ui->parityBox->setCurrentIndex(savedSettings->value("Parity", "").toInt());
+        ui->stopBitsBox->setCurrentIndex(savedSettings->value("Stop bits", "").toInt());
+        ui->flowControlBox->setCurrentIndex(savedSettings->value("Flow control", "").toInt());
+    savedSettings->endGroup();
 
     updateSettings();
 }
@@ -85,13 +81,27 @@ SettingsDialog::SettingsDialog(QSettings &Settings, QString p, QWidget *parent) 
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
-
+    delete port;
+    delete intValidator;
 }
 
-SettingsDialog::Settings SettingsDialog::settings() const
-{
-    return currentSettings;
-}
+//void SettingsDialog::initPort()
+//{
+//    connect(this,           SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
+//            this,           SLOT(handleError(QSerialPort::SerialPortError)));
+
+//    connect(this,           SIGNAL(readyRead()),
+//            this,           SLOT(readDatafromPort_1()));
+//}
+
+//void SettingsDialog::handleError(QSerialPort::SerialPortError error)
+//{
+//    if (error == QSerialPort::ResourceError)
+//    {
+//        closeSerialPort_1();
+//        QMessageBox::critical(this, tr("Critical Error"), serial_1->errorString());
+//    }
+//}
 
 void SettingsDialog::showPortInfo(int idx)
 {
@@ -110,14 +120,14 @@ void SettingsDialog::apply()
     updateSettings();
     hide();
 
-    QA_Settings->beginGroup(Port);
-        QA_Settings->setValue("Port Number",    ui->serialPortInfoListBox->currentIndex());
-        QA_Settings->setValue("Baudrate",       ui->baudRateBox->currentIndex());
-        QA_Settings->setValue("Data bits",      ui->dataBitsBox->currentIndex());
-        QA_Settings->setValue("Parity",         ui->parityBox->currentIndex());
-        QA_Settings->setValue("Stop bits",      ui->stopBitsBox->currentIndex());
-        QA_Settings->setValue("Flow control",   ui->flowControlBox->currentIndex());
-    QA_Settings->endGroup();
+    savedSettings->beginGroup("serialPorts/"+portName);
+        savedSettings->setValue("Port Number",    ui->serialPortInfoListBox->currentIndex());
+        savedSettings->setValue("Baudrate",       ui->baudRateBox->currentIndex());
+        savedSettings->setValue("Data bits",      ui->dataBitsBox->currentIndex());
+        savedSettings->setValue("Parity",         ui->parityBox->currentIndex());
+        savedSettings->setValue("Stop bits",      ui->stopBitsBox->currentIndex());
+        savedSettings->setValue("Flow control",   ui->flowControlBox->currentIndex());
+    savedSettings->endGroup();
 }
 
 void SettingsDialog::checkCustomBaudRatePolicy(int idx)
@@ -147,7 +157,7 @@ void SettingsDialog::fillPortsParameters()
     ui->dataBitsBox->addItem(QLatin1String("6"), QSerialPort::Data6);
     ui->dataBitsBox->addItem(QLatin1String("7"), QSerialPort::Data7);
     ui->dataBitsBox->addItem(QLatin1String("8"), QSerialPort::Data8);
-    ui->dataBitsBox->setCurrentIndex(3);
+//    ui->dataBitsBox->setCurrentIndex(3);
 
     // fill parity
     ui->parityBox->addItem(QLatin1String("None"), QSerialPort::NoParity);
@@ -190,36 +200,55 @@ void SettingsDialog::updateSettings()
     currentSettings.name = ui->serialPortInfoListBox->currentText();
 
     // Baud Rate
-    if (ui->baudRateBox->currentIndex() == 4) {
+    if (ui->baudRateBox->currentIndex() == ui->baudRateBox->count()-1) {
         // custom baud rate
         currentSettings.baudRate = ui->baudRateBox->currentText().toInt();
     } else {
         // standard baud rate
-        currentSettings.baudRate = static_cast<QSerialPort::BaudRate>(
+        currentSettings.baudRate = static_cast<qint32>(
                     ui->baudRateBox->itemData(ui->baudRateBox->currentIndex()).toInt());
     }
-    currentSettings.stringBaudRate = QString::number(currentSettings.baudRate);
+//    currentSettings.stringBaudRate = QString::number(currentSettings.baudRate);
 
     // Data bits
     currentSettings.dataBits = static_cast<QSerialPort::DataBits>(
                 ui->dataBitsBox->itemData(ui->dataBitsBox->currentIndex()).toInt());
-    currentSettings.stringDataBits = ui->dataBitsBox->currentText();
+//    currentSettings.stringDataBits = ui->dataBitsBox->currentText();
 
     // Parity
     currentSettings.parity = static_cast<QSerialPort::Parity>(
                 ui->parityBox->itemData(ui->parityBox->currentIndex()).toInt());
-    currentSettings.stringParity = ui->parityBox->currentText();
+//    currentSettings.stringParity = ui->parityBox->currentText();
 
     // Stop bits
     currentSettings.stopBits = static_cast<QSerialPort::StopBits>(
                 ui->stopBitsBox->itemData(ui->stopBitsBox->currentIndex()).toInt());
-    currentSettings.stringStopBits = ui->stopBitsBox->currentText();
+//    currentSettings.stringStopBits = ui->stopBitsBox->currentText();
 
     // Flow control
     currentSettings.flowControl = static_cast<QSerialPort::FlowControl>(
                 ui->flowControlBox->itemData(ui->flowControlBox->currentIndex()).toInt());
-    currentSettings.stringFlowControl = ui->flowControlBox->currentText();
+//    currentSettings.stringFlowControl = ui->flowControlBox->currentText();
 
     // Additional options
     currentSettings.localEchoEnabled = ui->localEchoCheckBox->isChecked();
+}
+
+QSerialPort::SerialPortError SettingsDialog::openSerialPort() const
+{
+    port->setPortName(currentSettings.name);
+    if (port->open(QIODevice::ReadWrite)) {
+        if (!(port->setBaudRate(currentSettings.baudRate)
+                && port->setDataBits(currentSettings.dataBits)
+                && port->setParity(currentSettings.parity)
+                && port->setStopBits(currentSettings.stopBits)
+                && port->setFlowControl(currentSettings.flowControl)))
+        {
+            port->close();
+            return QSerialPort::NotOpenError;
+        }
+    } else {
+        return QSerialPort::OpenError;
+    }
+    return QSerialPort::NoError;
 }

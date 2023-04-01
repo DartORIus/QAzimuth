@@ -21,43 +21,46 @@ QT_END_NAMESPACE
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    struct Settings {
+    struct portSettings {
         QString name;
         qint32 baudRate;
-        QString stringBaudRate;
+//        QString stringBaudRate;
         QSerialPort::DataBits dataBits;
-        QString stringDataBits;
+//        QString stringDataBits;
         QSerialPort::Parity parity;
-        QString stringParity;
+//        QString stringParity;
         QSerialPort::StopBits stopBits;
-        QString stringStopBits;
+//        QString stringStopBits;
         QSerialPort::FlowControl flowControl;
-        QString stringFlowControl;
+//        QString stringFlowControl;
         bool localEchoEnabled;
     };
 
-    explicit SettingsDialog(QSettings &, QString, QWidget *parent = 0);
+    explicit SettingsDialog(QSettings*, unsigned int n, QWidget* parent = 0);
     ~SettingsDialog();
 
-    Settings settings() const;
+    const portSettings& settings(void) const { return currentSettings; }
+    QSerialPort* getPort(void) { return port; }
+    QSerialPort::SerialPortError openSerialPort(void) const;
+//    void initPort(void);
 
 private slots:
     void showPortInfo(int idx);
-    void apply();
+    void apply(void);
     void checkCustomBaudRatePolicy(int idx);
+//    void handleError(QSerialPort::SerialPortError error);
 
 private:
-    void fillPortsParameters();
-    void fillPortsInfo();
-    void updateSettings();
-    QSettings *QA_Settings;
-    QString   Port;
-private:
+    QSerialPort* port;
+    const QString portName;
+    portSettings currentSettings;
+    QSettings* savedSettings;
+    QIntValidator* intValidator;
+    void fillPortsParameters(void);
+    void fillPortsInfo(void);
+    void updateSettings(void);
     Ui::SettingsDialog *ui;
-    Settings currentSettings;
-    QIntValidator *intValidator;
 };
 
 #endif // SETTINGSDIALOG_H

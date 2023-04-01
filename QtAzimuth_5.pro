@@ -14,6 +14,7 @@ SOURCES += \
     main.cpp \
     Formulars/show_parse.cpp \
     Formulars/Course_Heeling_Trim/course_heeling_trim.cpp \
+    Formulars/Main_Window/serialportaction.cpp \
     Formulars/Main_Window/settingsdialog.cpp \
     Formulars/Main_Window/mainwindow.cpp \
     Formulars/Course_Heeling_Trim/Course/Course_QW.cpp \
@@ -41,6 +42,7 @@ HEADERS  += \
     parse_nmea.h \
     Formulars/show_parse.h \
     Formulars/Course_Heeling_Trim/course_heeling_trim.h \
+    Formulars/Main_Window/serialportaction.h \
     Formulars/Main_Window/settingsdialog.h \
     Formulars/Main_Window/mainwindow.h \
     Formulars/Course_Heeling_Trim/Course/Course_QW.h \

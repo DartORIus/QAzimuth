@@ -25,7 +25,6 @@ SOURCES += \
     Formulars/Koord/Coord_QW.cpp \
     Formulars/Koord/Visual_Coord.cpp \
     Formulars/NMEA_DIALOG/dialog.cpp \
-    Formulars/POUGT/POUGT_Formular.cpp \
     Formulars/POHPR/POHPR.cpp \
     Graphic/Analiz.cpp \
     Graphic/Control_Graf.cpp \
@@ -52,7 +51,6 @@ HEADERS  += \
     Formulars/Koord/Coord_QW.h \
     Formulars/Koord/Visual_Coord.h \
     Formulars/NMEA_DIALOG/dialog.h \
-    Formulars/POUGT/POUGT_Formular.h \
     Formulars/POHPR/POHPR.h \
     Graphic/Analiz.h \
     Graphic/Control_Graf.h \

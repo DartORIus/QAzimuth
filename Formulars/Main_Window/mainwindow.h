@@ -14,7 +14,6 @@
 #include <Formulars/Koord/Coord_QW.h>
 #include <Formulars/Course_Heeling_Trim/course_heeling_trim.h>
 #include <Formulars/POHPR/POHPR.h>
-#include <Formulars/POUGT/POUGT_Formular.h>
 #include <Formulars/RMC_Formular.h>
 #include <Formulars/XY_Widget/XY_Area.h>
 
@@ -71,8 +70,6 @@ private:
     QSerialPort         *serial_1;
     Parse_NMEA          *parse_NMEA;
     POHPR_W             *pohpr;
-
-    POUGT_Formular      *POUGT_F;
 
     RMC_Formular        *RMC_F;
 

@@ -29,61 +29,6 @@ struct POHPR{
     char    status;
 };
 
-struct POUGT{
-    uint8_t   satellite;
-    uint8_t   param;
-    char      status;
-    uint32_t  time;
-    float     Course;
-    float     X1;
-    float     X2;
-    float     base_line;
-    float     diff;
-    float     base_satellite;
-    uint8_t   R;
-};
-
-struct PONDM{
-    float Course;
-    float Pitch;
-    float Roll;
-    float Distance_1;
-    float Distance_2;
-    float Distance_3;
-};
-
-struct PORZA{
-    uint8_t     Number;
-    uint32_t    Boudrate;
-    uint8_t     Proto;
-};
-
-struct PNVGO{
-    bool        Signal;
-    float       Pitch;
-    float       PitchI;
-};
-
-struct PNVGVER{
-    bool        Signal;
-    char        PNVGVER_Soft[11];
-    char        PNVGVER_NSoft_1[5];
-    char        PNVGVER_NSoft_2[5];
-    char        PNVGVER_NSoft_3[5];
-    char        PNVGVER_Linux_Kernel[30];
-};
-
-struct PNVGS{
-    bool        Signal;
-    float       Loss;
-    float       Seach;
-};
-
-struct PNVGR{
-    uint8_t      Status;
-    float        Ahez;
-};
-
 struct GPRMC{
     float       Time;
     char        Status;
@@ -98,31 +43,11 @@ struct GPRMC{
     char        Navigation_Status;
 };
 
-struct PORZV{
-    char    Stat;
-    int     Time;
-    int     Day;
-    int     Mounth;
-    int     Year;
-};
 
-struct GPZDA{
-    char k;
-};
-
-struct NMEA_Data{
-    struct GPGGA    GPGGA;
-    struct POHPR    POHPR;
-    struct POUGT    POUGT;
-    struct PONDM    PONDM;
-    struct PORZA    PORZA;
-    struct PNVGO    PNVGO;
-    struct PNVGVER  PNVGVER;
-    struct PNVGS    PNVGS;
-    struct PNVGR    PNVGR;
-    struct GPRMC    RMC;
-    struct PORZV    PORZV;
-    struct GPZDA    GPZDA;
+struct NMEA_Data{               // GPGSA GPGSV
+    struct GPGGA    GPGGA;      // confirmed
+    struct POHPR    POHPR;      // ask
+    struct GPRMC    RMC;        // confirmed
 };
 
 typedef struct {

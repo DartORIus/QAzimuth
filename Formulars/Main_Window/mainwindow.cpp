@@ -45,11 +45,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *pohpr_Action = ui->menuView->addAction("POHPR");
     connect(pohpr_Action, SIGNAL(triggered()), pohpr, SLOT(show()));
 
-    POUGT_F = new POUGT_Formular();
-    POUGT_F->setWindowTitle("POUGT");
-    QAction *pougt_Action = ui->menuView->addAction("POUGT");
-    connect(pougt_Action, SIGNAL(triggered()), POUGT_F, SLOT(show()));
-
     Show_parse *Show_Parse_NMEA = new Show_parse;
 
     RMC_F = new RMC_Formular();
@@ -100,8 +95,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(pohpr,              SIGNAL(Find_Text_Signal(double)),
             dialog,             SLOT(Find_Signal_Slot(double)));
-    connect(POUGT_F,            SIGNAL(Find_Text_Signal(double)),
-            dialog,             SLOT(Find_Signal_Slot(double)));
     connect(RMC_F,              SIGNAL(Find_Text_Signal(double)),
             dialog,             SLOT(Find_Signal_Slot(double)));
 
@@ -119,22 +112,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR &)),
             this,               SLOT(ZDA_Slot(const POHPR &)));
-
-    connect(parse_nmea, SIGNAL(Parse_POUGT_Signal(const POUGT&)),
-            POUGT_F,    SLOT(Parse_POUGT_Slot(const POUGT&)));
-    connect(dialog,     SIGNAL(Clear_Signal()),
-            POUGT_F,    SLOT(Clear_Slot()));
-    connect(dialog,     SIGNAL(Push_Read_Buton_Signal(bool)),
-            POUGT_F,    SLOT(Push_Read_Buton_Slot(bool)));
-    connect(dialog,     SIGNAL(Read_All_Button_Signal()),
-            POUGT_F,    SLOT(Read_All_Button_Slot()));
-
-    connect(POUGT_F,    SIGNAL(Find_Point_Signal(int)),
-            pohpr,      SLOT(Find_Point_Slot(int)));
-    connect(pohpr,      SIGNAL(Find_Point_Signal(int)),
-            RMC_F,      SLOT(Find_Point_Slot(int)));
-    connect(pohpr,      SIGNAL(Find_Point_Signal(int)),
-            POUGT_F,    SLOT(Find_Point_Slot(int)));
 
     connect(parse_nmea, SIGNAL(Parse_GPRMC_Signal(const GPRMC&)),
             RMC_F,      SLOT(Parse_GPRMC_Signal(const GPRMC&)));
@@ -161,7 +138,6 @@ void MainWindow::closeEvent(QCloseEvent *)
     delete(pohpr);
     delete(coord);
     delete(CHT);
-    delete(POUGT_F);
     delete(parse_nmea);
     delete(RMC_F);
     delete(XY_Wid);
@@ -174,7 +150,6 @@ void MainWindow::ReadSettings()
         coord       ->setHidden(Settings.value("/Coord").toBool());
         CHT         ->setHidden(Settings.value("/CHT").toBool());
         pohpr       ->setHidden(Settings.value("/POHPR").toBool());
-        POUGT_F     ->setHidden(Settings.value("/POUGT_Formular").toBool());
         RMC_F       ->setHidden(Settings.value("/RMC_Formular").toBool());
     Settings.endGroup();
 }
@@ -192,7 +167,6 @@ void MainWindow::WriteSettings()
         Settings.setValue("/Coord",         coord->isHidden());
         Settings.setValue("/CHT",           CHT->isHidden());
         Settings.setValue("/POHPR",         pohpr->isHidden());
-        Settings.setValue("/POUGT_Formular",POUGT_F->isHidden());
         Settings.setValue("/RMC_Formular",  RMC_F->isHidden());
     Settings.endGroup();
 }
@@ -298,7 +272,6 @@ void MainWindow::Show_Hide_Slot(bool enable)
         pohpr->hide();
         coord->hide();
         CHT->hide();
-        POUGT_F->hide();
     }
 }
 

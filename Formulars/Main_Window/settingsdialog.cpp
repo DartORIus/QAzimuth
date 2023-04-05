@@ -82,26 +82,7 @@ SettingsDialog::~SettingsDialog()
 {
     delete ui;
     delete port;
-    delete intValidator;
 }
-
-//void SettingsDialog::initPort()
-//{
-//    connect(this,           SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
-//            this,           SLOT(handleError(QSerialPort::SerialPortError)));
-
-//    connect(this,           SIGNAL(readyRead()),
-//            this,           SLOT(readDatafromPort_1()));
-//}
-
-//void SettingsDialog::handleError(QSerialPort::SerialPortError error)
-//{
-//    if (error == QSerialPort::ResourceError)
-//    {
-//        closeSerialPort_1();
-//        QMessageBox::critical(this, tr("Critical Error"), serial_1->errorString());
-//    }
-//}
 
 void SettingsDialog::showPortInfo(int idx)
 {

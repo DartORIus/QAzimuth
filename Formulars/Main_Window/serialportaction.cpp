@@ -6,7 +6,7 @@ SerialPortAction::SerialPortAction(const QIcon& icon, const QString& text, ACT_T
 
 }
 
-void SerialPortAction::slot1()
+void SerialPortAction::wasTriggered_slot()
 {
-    emit wasTriggered(this);
+    emit wasTriggered_signal(this);
 }

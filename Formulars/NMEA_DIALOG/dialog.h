@@ -53,64 +53,31 @@ class Dialog : public QWidget
     Q_OBJECT
 
 signals:
-    void Write_NMEA_Data_SIGNAL(const QString &);
+    void Write_NMEA_Data_SIGNAL(const QString &, int);
     void Parse_NMEA_Signal(const QString &);
     void Clear_Signal();
     void Push_Read_Buton_Signal(bool);
     void Read_All_Button_Signal();
    // void Set_Title(const QString &);
-    void Enable_Connect(bool);
     void Show_Hide_Signal(bool);
+    void portStateChanged_Signal(int);
 public:
     explicit Dialog(QSettings &, QWidget *parent = 0);
     ~Dialog();
     void setLocalEchoEnabled(bool);
     void Disable_Enable_Send(bool);
 
+    void addTab(const QString&);
+    void deleteTab();
+
 public slots:
     void Find_Signal_Slot(double);
     void Read_Button_Settings(bool);
     void Get_NMEA_SLOT(const QString &);
-    void Show_NMEA_Text(const QByteArray &);
-    void Show_NMEA_Text_1(const QByteArray &);
+    void Show_NMEA_Text(const QByteArray &, int);
+    void isPortOpened_Slot(int);
+//    void Show_NMEA_Text_1(const QByteArray &);
 
-protected:
-    virtual void contextMenuEvent(QContextMenuEvent *e);
-    void keyPressEvent(QKeyEvent *);
-
-private:
-    bool localEchoEnabled;
-    QLabel *Protocol_Znak;
-    QLabel *Control_Sum_Label;
-    QString NMEA_Text;
-    QLabel  *File_Label;
-    Show_Text_QW *Show_Text, *Show_Text_1;
-    Show_Text_QW *Show_Hex;
-
-    QFile Open_File;
-    QFile Save_File;
-    Read_File_Thread *read_thread;
-    QSlider *slider;
-    QSpinBox *spin;
-
-    QComboBox *ComboBox;
-
-    QPushButton *Save_File_Button;
-    QPushButton *Read_File_Button;
-    QPushButton *Read_All_Button;
-    QPushButton *Text_Button, *Text_Button_1;
-    QPushButton *Hex_Button;
-    QPushButton *Open_File_Button;
-    QPushButton *Clear_Button;
-
-    QPushButton *Sent_NMEA;
-
-    qint64 File_Size;
-
-    QSettings *QA_Settings;
-
-    void Save_File_Funk(QString);
-    void Read_Dialog_ComboBox();
 private slots:
     void Open_File_Slot();
     void Save_File_Slot();
@@ -123,6 +90,45 @@ private slots:
 
     void Control_Sum(const QString &);
     void putData(void);
+    void changeSendStatus_Slot(int);
+
+protected:
+    virtual void contextMenuEvent(QContextMenuEvent *e);
+    void keyPressEvent(QKeyEvent *);
+
+private:
+    bool localEchoEnabled;
+    QLabel *Protocol_Znak;
+    QLabel *Control_Sum_Label;
+    QString NMEA_Text;
+    QLabel  *File_Label;
+
+    QFile Open_File;
+    QFile Save_File;
+    Read_File_Thread *read_thread;
+    QSlider *slider;
+    QSpinBox *spin;
+
+    QComboBox *ComboBox;
+
+    QPushButton *Save_File_Button;
+    QPushButton *Read_File_Button;
+    QPushButton *Read_All_Button;
+    QPushButton *Open_File_Button;
+    QPushButton *Clear_Button;
+
+    QPushButton *Sent_NMEA;
+
+    qint64 File_Size;
+
+    QSettings *QA_Settings;
+
+    QTabWidget* ptabWidget;
+    QList<Show_Text_QW*> tabs;
+    QList<bool> portsOpenStatus;
+
+    void Save_File_Funk(QString);
+    void Read_Dialog_ComboBox();
 };
 
 #endif // CONSOLE_H

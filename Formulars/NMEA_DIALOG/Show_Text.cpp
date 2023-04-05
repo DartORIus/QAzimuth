@@ -117,9 +117,9 @@ void Show_Text_QW::Find_Slot(double Cents)
     QTextBlock b = document()->findBlockByLineNumber(int(N));
     find(b.text());
 
-     QTextEdit::ExtraSelection extra;
-     extra.cursor = textCursor();
-     extraSelections.append(extra);
+    QTextEdit::ExtraSelection extra;
+    extra.cursor = textCursor();
+    extraSelections.append(extra);
 }
 
 void Show_Text_QW::Show_Hide(bool click)

@@ -13,15 +13,18 @@
 #define HEIGHT 30
 
 Dialog::Dialog(QSettings &Settings, QWidget *parent)
-    : QWidget(parent)
-    , localEchoEnabled(true)
+    : QWidget(parent), localEchoEnabled(true)
 {
     QA_Settings = &Settings;
     ComboBox = new QComboBox;
+
+    QFont font("Cascadia Mono SemiBold");
+    font.setStyleHint(QFont::Monospace);
+    ComboBox->setFont(font);
     ComboBox->setEditable(true);
     ComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     QPalette p = palette();
-    p.setColor(QPalette::Base, Qt::black);
+    p.setColor(QPalette::Base, QColor(75, 14, 58, 255));
     p.setColor(QPalette::Text, Qt::red);
     ComboBox->setPalette(p);
     ComboBox->setMaximumHeight(HEIGHT);
@@ -39,29 +42,12 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
 
     File_Label = new QLabel("_________________");
 
-    Show_Text = new Show_Text_QW;
-    Show_Text->hide();
-
-    Show_Text_1 = new Show_Text_QW;
-    Show_Text_1->hide();
-    QPalette Show_Text_Palette = Show_Text_1->palette();
-    Show_Text_Palette.setColor(QPalette::Base, QColor(100, 255, 50, 255));
-    Show_Text_1->setPalette(Show_Text_Palette);
-
-    Show_Hex = new Show_Text_QW;
-    Show_Hex->hide();
-    QPalette Show_Hex_Palette = Show_Hex->palette();
-    Show_Hex_Palette.setColor(QPalette::Base, QColor(100, 200, 255, 255));
-    Show_Hex->setPalette(Show_Hex_Palette);
-
-    Text_Button                     = new QPushButton(tr("&Text"));
-    Text_Button->setCheckable(true);
-
-    Text_Button_1                     = new QPushButton(tr("&Text_1"));
-    Text_Button_1->setCheckable(true);
-
-    Hex_Button                      = new QPushButton(tr("&Hex"));
-    Hex_Button->setCheckable(true);
+    ptabWidget = new QTabWidget(this);
+    ptabWidget->setTabBarAutoHide(true);
+    addTab("Main");
+    connect(ptabWidget, SIGNAL(currentChanged(int)), this, SLOT(isPortOpened_Slot(int)));
+    connect(this, SIGNAL(portStateChanged_Signal(int)), this, SLOT(changeSendStatus_Slot(int)));
+    portsOpenStatus[0] = false;
 
     Save_File_Button = new QPushButton(tr("&Save"));
     QPalette pal_blau = Save_File_Button->palette();
@@ -91,9 +77,6 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
     QHB->addWidget(Sent_NMEA);
 
     QHBoxLayout *QHB_1 = new QHBoxLayout;
-    QHB_1->addWidget(Text_Button);
-    QHB_1->addWidget(Text_Button_1);
-    QHB_1->addWidget(Hex_Button);
     QHB_1->addWidget(Save_File_Button);
     QHB_1->addWidget(Open_File_Button);
     QHB_1->addWidget(Read_Spinbox);
@@ -102,56 +85,38 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
     QHB_1->addWidget(Clear_Button);
 
     slider = new QSlider(Qt::Horizontal);
-        slider->setDisabled(true);
-    spin   = new QSpinBox();
-        spin->setDisabled(true);
-        spin->setMinimum(0);
-        spin->setMaximum(100);
-        spin->setSuffix(" %");
+    slider->setDisabled(true);
+    spin = new QSpinBox();
+    spin->setDisabled(true);
+    spin->setMinimum(0);
+    spin->setMaximum(100);
+    spin->setSuffix(" %");
 
     QHBoxLayout *QhB = new QHBoxLayout;
     QhB->addWidget(slider);
     QhB->addWidget(spin);
 
     QVBoxLayout *QVB = new QVBoxLayout;
-        QVB->addLayout(QHB);
-        QVB->addWidget(File_Label);
-        QVB->addWidget(Show_Text);
-        QVB->addWidget(Show_Text_1);
-        QVB->addWidget(Show_Hex);
-        QVB->addLayout(QHB_1);
-        QVB->addLayout(QhB);
+    QVB->addLayout(QHB);
+    QVB->addWidget(File_Label);
+    QVB->addWidget(ptabWidget);
+    QVB->addLayout(QHB_1);
+    QVB->addLayout(QhB);
     setLayout(QVB);
 
     read_thread = new Read_File_Thread();
 
-    connect(ComboBox,  SIGNAL(editTextChanged(const QString &)),
-            this,      SLOT(Control_Sum(const QString &)));
-
-    connect(Text_Button,   SIGNAL(clicked(bool)), Show_Text,   SLOT(Show_Hide(bool)));
-    connect(Text_Button_1, SIGNAL(clicked(bool)), Show_Text_1, SLOT(Show_Hide(bool)));
-
-    connect(Hex_Button,  SIGNAL(clicked(bool)), Show_Hex, SLOT(Show_Hide(bool)));
-
-    connect(Open_File_Button, SIGNAL(pressed()), this, SLOT(Open_File_Slot()));
-
-    connect(Save_File_Button, SIGNAL(pressed()), this, SLOT(Save_File_Slot()));
-
-    connect(Read_File_Button, SIGNAL(clicked(bool)),  this, SLOT(Read_Stop_Slot(bool)));
-
-    connect(Read_All_Button,SIGNAL(clicked()),  this, SLOT(Read_All()));
-
-    connect(Clear_Button, SIGNAL(clicked()), this, SLOT(Clear_Slot()));
-
-    connect(Read_Spinbox, SIGNAL(valueChanged(int)), read_thread, SLOT(Set_Period(int)));
-
-    connect(read_thread, SIGNAL(Read_Line()), this, SLOT(Read_File_Slot()));
-
-    connect(Sent_NMEA, SIGNAL(clicked()), this, SLOT(putData()));
-
-    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(Peremotka_Slot(int)));
-
-    connect(spin, SIGNAL(valueChanged(int)),   this, SLOT(Change_Slider(int)));
+    connect(Open_File_Button,   SIGNAL(pressed()), this,    SLOT(Open_File_Slot()));
+    connect(Save_File_Button,   SIGNAL(pressed()), this,    SLOT(Save_File_Slot()));
+    connect(Read_File_Button,   SIGNAL(clicked(bool)), this, SLOT(Read_Stop_Slot(bool)));
+    connect(Read_All_Button,    SIGNAL(clicked()), this,    SLOT(Read_All()));
+    connect(Clear_Button,   SIGNAL(clicked()), this,        SLOT(Clear_Slot()));
+    connect(Read_Spinbox,   SIGNAL(valueChanged(int)), read_thread, SLOT(Set_Period(int)));
+    connect(read_thread,    SIGNAL(Read_Line()), this,      SLOT(Read_File_Slot()));
+    connect(Sent_NMEA,  SIGNAL(clicked()), this,            SLOT(putData()));
+    connect(ComboBox,   SIGNAL(editTextChanged(const QString &)), this, SLOT(Control_Sum(const QString &)));
+    connect(slider,     SIGNAL(valueChanged(int)), this,    SLOT(Peremotka_Slot(int)));
+    connect(spin,   SIGNAL(valueChanged(int)), this,        SLOT(Change_Slider(int)));
 }
 
 Dialog::~Dialog()
@@ -167,6 +132,38 @@ Dialog::~Dialog()
     QA_Settings->setValue("/Send_NMEA_3", ComboBox->itemText(S-3));
     QA_Settings->setValue("/Send_NMEA_4", ComboBox->itemText(S-4));
     QA_Settings->endGroup();
+}
+
+void Dialog::isPortOpened_Slot(int i)
+{
+    Disable_Enable_Send(portsOpenStatus[i]);
+}
+
+void Dialog::changeSendStatus_Slot(int i)
+{
+    portsOpenStatus[i] = !portsOpenStatus[i];
+    if (i == ptabWidget->currentIndex()) {
+        Disable_Enable_Send(portsOpenStatus[i]);
+    }
+}
+
+void Dialog::addTab(const QString& str)
+{
+    Show_Text_QW* newTab = new Show_Text_QW;
+    tabs.push_back(newTab);
+//    QPalette Show_Text_Palette = newTab->palette();
+//    Show_Text_Palette.setColor(QPalette::Base, QColor(100, 200, 255, 255));
+//    newTab->setPalette(Show_Text_Palette);
+    ptabWidget->addTab(newTab, str);
+    portsOpenStatus.push_back(false);
+}
+
+void Dialog::deleteTab()
+{
+    ptabWidget->removeTab(ptabWidget->count() - 1);
+    delete tabs.last();
+    tabs.pop_back();
+    portsOpenStatus.pop_back();
 }
 
 void Dialog::Read_Dialog_ComboBox()
@@ -191,7 +188,6 @@ void Dialog::Read_Dialog_ComboBox()
         ComboBox->addItem(S4);
 
     ComboBox->setCurrentIndex(4);
-
 }
 
 void Dialog::Control_Sum(const QString &str)
@@ -209,23 +205,21 @@ void Dialog::Control_Sum(const QString &str)
             B = "0"+B;
 
         B.resize(2);
-
         Control_Sum_Label->setText(B);
-
         NMEA_Text ="$"+str+"*"+B+"\r\n";
 }
 
 void Dialog::putData(void)
 {
-    emit Write_NMEA_Data_SIGNAL(NMEA_Text);
+    emit Write_NMEA_Data_SIGNAL(NMEA_Text, ptabWidget->currentIndex() - 1);
 }
 
-void Dialog::Show_NMEA_Text(const QByteArray &Byte)
+void Dialog::Show_NMEA_Text(const QByteArray &Byte, int index)
 {
     QString Text  = QString::fromLocal8Bit(Byte);
 
-    Show_Text->insertPlainText(Text);
-    Show_Text->moveCursor(QTextCursor::End);
+    tabs[index]->insertPlainText(Text);
+    tabs[index]->moveCursor(QTextCursor::End);
 
     if(Save_File.exists())
        Save_File.write(Text.toLocal8Bit());
@@ -233,13 +227,15 @@ void Dialog::Show_NMEA_Text(const QByteArray &Byte)
     emit Parse_NMEA_Signal(Text);
 }
 
-void Dialog::Show_NMEA_Text_1(const QByteArray &Byte)
-{
-    QString Text  = QString::fromLocal8Bit(Byte);
-
-    Show_Text_1->insertPlainText(Text);
-    Show_Text_1->moveCursor(QTextCursor::End);
-}
+/*      Not used anywhere   *\
+ * void Dialog::Show_NMEA_Text_1(const QByteArray &Byte)
+ * {
+ *     QString Text  = QString::fromLocal8Bit(Byte);
+ *
+ *     tabs.first()->insertPlainText(Text);
+ *     tabs.first()->moveCursor(QTextCursor::End);
+ * }
+\*                          */
 
 void Dialog::setLocalEchoEnabled(bool set)
 {
@@ -250,20 +246,15 @@ void Dialog::Disable_Enable_Send(bool S)
 {
     Sent_NMEA->setEnabled(S);
 
-    if(S)
-    {
-        QPalette p = palette();
-        p.setColor(QPalette::Base, Qt::black);
-        p.setColor(QPalette::Text, Qt::green);
-        ComboBox->setPalette(p);
+    QPalette p = palette();
+    p.setColor(QPalette::Base, QColor(75, 14, 58, 255));
+    if(S) {
+        p.setColor(QPalette::Text, Qt::white);
     }
-    else
-    {
-        QPalette p = palette();
-        p.setColor(QPalette::Base, Qt::black);
+    else {
         p.setColor(QPalette::Text, Qt::red);
-        ComboBox->setPalette(p);
     }
+    ComboBox->setPalette(p);
 }
 
 void Dialog::contextMenuEvent(QContextMenuEvent *e)
@@ -277,12 +268,6 @@ void Dialog::keyPressEvent(QKeyEvent *key)
     {
         case Qt::Key_Return:
             Sent_NMEA->animateClick();
-            break;
-        case Qt::Key_T:
-            Text_Button->animateClick();
-            break;
-        case Qt::Key_H:
-            Hex_Button->animateClick();
             break;
         case Qt::Key_R:
             Read_File_Button->animateClick();
@@ -304,11 +289,10 @@ void Dialog::keyPressEvent(QKeyEvent *key)
 
 void Dialog::Read_Stop_Slot(bool checked)
 {
+    ptabWidget->setCurrentIndex(0);
     if(checked)
     {
         read_thread->start();
-        emit Enable_Connect(false);
-
         Read_All_Button ->setEnabled(false);
         Open_File_Button->setEnabled(false);
         Clear_Button    ->setEnabled(false);
@@ -316,8 +300,6 @@ void Dialog::Read_Stop_Slot(bool checked)
     else
     {
         read_thread->quit();
-        emit Enable_Connect(true);
-
         Read_All_Button ->setEnabled(true);
         Open_File_Button->setEnabled(true);
         Clear_Button    ->setEnabled(true);
@@ -332,35 +314,33 @@ void Dialog::Read_All()
 
     QString Text_NMEA = QString::fromLocal8Bit(data);
 
-   Show_Text->insertPlainText(Text_NMEA);
+    tabs.first()->insertPlainText(Text_NMEA);
 
-   QStringList Text_NMEA_List = Text_NMEA.split("\n");
+    QStringList Text_NMEA_List = Text_NMEA.split("\n");
 
-    Show_Text->hide();
     emit Show_Hide_Signal(false);
+    ptabWidget->setCurrentIndex(0);
 
-   for(int i = 0; i < Text_NMEA_List.size(); i++)
-   {
-       if(Text_NMEA_List[i].size() > 0)
-       {
-           QString Z = *(Text_NMEA_List[i].end() -1);
+    for(int i = 0; i < Text_NMEA_List.size(); i++)
+    {
+        if(Text_NMEA_List[i].size() > 0)
+        {
+            QString Z = *(Text_NMEA_List[i].end() -1);
 
-           if(Z != "\r")
-           {
-               Text_NMEA_List[i] += "\r";
-           }
+            if(Z != "\r")
+            {
+                Text_NMEA_List[i] += "\r";
+            }
 
-           emit Parse_NMEA_Signal(Text_NMEA_List[i] + "\n");
-       }
-   }
+            emit Parse_NMEA_Signal(Text_NMEA_List[i] + "\n");
+        }
+    }
 
     Read_All_Button->setChecked(false);
     spin->setValue(100);
     slider->setValue(Open_File.pos());
 
     emit Read_All_Button_Signal();
-
-     Text_Button->click();
     emit Show_Hide_Signal(true);
 }
 
@@ -389,7 +369,7 @@ void Dialog::Read_File_Slot()
         Read_File_Button->click();
     }
 
-    this->Show_NMEA_Text(data);
+    this->Show_NMEA_Text(data, 0);
 }
 
 void Dialog::Open_File_Slot()
@@ -398,30 +378,29 @@ void Dialog::Open_File_Slot()
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "",
     tr(".nme (*.nme)"));
-
-        if (fileName != "")
+    if (fileName != "")
+    {
+        Open_File.setFileName(fileName);
+        if (!Open_File.open(QIODevice::ReadOnly))
         {
-            Open_File.setFileName(fileName);
-            if (!Open_File.open(QIODevice::ReadOnly))
-            {
-                QMessageBox::information(0, "Warning", "Error");
-            }
-            else
-            {
-                Read_File_Button->setEnabled(true);
-                slider->setEnabled(true);
-                spin->setEnabled(true);
-
-                if(!Read_File_Button->isChecked())
-                    Read_All_Button->setEnabled(true);
-
-                slider->setRange(0, Open_File.size());
-
-                File_Size = Open_File.size();
-
-                File_Label->setText(fileName);
-            }
+            QMessageBox::information(0, "Warning", "Error");
         }
+        else
+        {
+            Read_File_Button->setEnabled(true);
+            slider->setEnabled(true);
+            spin->setEnabled(true);
+
+            if(!Read_File_Button->isChecked())
+                Read_All_Button->setEnabled(true);
+
+            slider->setRange(0, Open_File.size());
+
+            File_Size = Open_File.size();
+
+            File_Label->setText(fileName);
+        }
+    }
 }
 
 void Dialog::Save_File_Funk(QString fileName)
@@ -436,7 +415,8 @@ void Dialog::Save_File_Funk(QString fileName)
         else
         {
             QTextStream stream(&Save_File);
-            stream << Show_Text->toPlainText();
+            int tabIndex = ptabWidget->currentIndex();
+            stream << tabs.at(tabIndex)->toPlainText();
         }
     }
 }
@@ -490,8 +470,8 @@ void Dialog::Clear_Slot()
     spin->setEnabled(false);
     Read_File_Button->setEnabled(false);
     Read_All_Button->setEnabled(false);
-    Show_Text->clear();
-    Show_Hex->clear();
+    int tabIndex = ptabWidget->currentIndex();
+    tabs.at(tabIndex)->clear();
 
     File_Label->setText("_________________");
 
@@ -500,7 +480,8 @@ void Dialog::Clear_Slot()
 
 void Dialog::Find_Signal_Slot(double Cents)
 {
-    Show_Text->Find_Slot(Cents);
+    int tabIndex = ptabWidget->currentIndex();
+    tabs.at(tabIndex)->Find_Slot(Cents);
 }
 
 void Dialog::Read_Button_Settings(bool Enable)

@@ -58,27 +58,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     QAction *XY_graph_Actin = ui->menuView->addAction("XY_Formular");
     connect(XY_graph_Actin, SIGNAL(triggered()), XY_Wid, SLOT(show()));
 
-    portsNumber = Settings.value("serialPorts/number", 1).toInt();
-    qDebug () << portsNumber;
+    portsNumber = Settings.value("serialPorts/number", 0).toInt();
     addPorts(portsNumber);
     initAddAction();
     initActionsConnections();
-/**** have to be fixed *****/
-    connect(serialPorts[0]->getPort(),           SIGNAL(readyRead()),
-            this,               SLOT(readDatafromPort()));
 
-    connect(dialog,             SIGNAL(Write_NMEA_Data_SIGNAL(const QString &)),
-            this,               SLOT(write_NMEA_Data_SLOT(const QString &)));
-/************************************************/
+    connect(dialog,             SIGNAL(Write_NMEA_Data_SIGNAL(const QString &, int)),
+            this,               SLOT(write_NMEA_Data_SLOT(const QString &, int)));
 
-    connect(this,               SIGNAL(Show_NMEA_Text(const QByteArray &)),
-            dialog,             SLOT(Show_NMEA_Text(const QByteArray &)));
+//    connect(this,               SIGNAL(Show_NMEA_Text(const QByteArray &)),
+//            dialog,             SLOT(Show_NMEA_Text(const QByteArray &)));
 
     connect(dialog,             SIGNAL(Parse_NMEA_Signal(const QString &)),
             parse_nmea,         SLOT(Parse(const QString &)));
-
-//    connect(dialog,             SIGNAL(Enable_Connect(bool)),
-//            this,               SLOT(Enable_Connect(bool)));
 
     connect(dialog,             SIGNAL(Show_Hide_Signal(bool)),
             this,               SLOT(Show_Hide_Slot(bool)));
@@ -150,9 +142,17 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *)
 {
     WriteSettings();
-    for (unsigned int i = 0; i < portsNumber; ++i) {
+    for (unsigned int i = 0; i < serialPorts.size(); ++i) {
         delete(serialPorts[i]);
     }
+    for (unsigned int i = 0; i < serialPortActions.size(); ++i) {
+        QVector<SerialPortAction*> asd = serialPortActions.at(i);
+        for (int j = 0; j < asd.size(); ++j) {
+            delete serialPortActions[i][j];
+        }
+    }
+    delete paddAction;
+    delete pDeleteAction;
     delete(dialog);
     delete(pohpr);
     delete(coord);
@@ -191,43 +191,7 @@ void MainWindow::WriteSettings()
         Settings.setValue("/POUGT_Formular",POUGT_F->isHidden());
         Settings.setValue("/RMC_Formular",  RMC_F->isHidden());
     Settings.endGroup();
-}
-
-void MainWindow::openSerialPort(SerialPortAction* action)
-{
-    QSerialPort::SerialPortError portError = action->getSettingsDialog()->openSerialPort();
-    if (portError == QSerialPort::NoError) {
-        SettingsDialog::portSettings p = action->getSettingsDialog()->settings();
-        dialog->setEnabled(true);
-        dialog->Read_Button_Settings(false);
-        dialog->setLocalEchoEnabled(p.localEchoEnabled);
-        action->setType(SerialPortAction::DISCONNECT);
-        action->setIcon(ICON[SerialPortAction::CONNECT]);
-//        ui->actionConfigure_1->setEnabled(false);     // <- fix
-        ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
-                                   .arg(p.name).arg(p.baudRate).arg(p.dataBits)
-                                   .arg(p.parity).arg(p.stopBits).arg(p.flowControl));
-        dialog->Disable_Enable_Send(true);
-    } else if (portError == QSerialPort::OpenError) {
-        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
-        ui->statusBar->showMessage(tr("Open error"));
-    } else {
-        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
-        ui->statusBar->showMessage(tr("Configure error"));
-    }
-}
-
-void MainWindow::closeSerialPort(SerialPortAction* action)
-{
-    action->getSettingsDialog()->getPort()->close();
-    action->setType(SerialPortAction::CONNECT);
-    action->setIcon(ICON[SerialPortAction::DISCONNECT]);
-//    ui->actionConfigure_1->setEnabled(true);      // <- fix
-    ui->statusBar->showMessage(tr("Disconnected"));
-    dialog->Read_Button_Settings(true);
-    //pohpr->Push_Read_Buton_Slot(false);
-
-    dialog->Disable_Enable_Send(false);
+    Settings.setValue("serialPorts/number", portsNumber);
 }
 
 void MainWindow::about()
@@ -242,33 +206,17 @@ void MainWindow::about()
                           "use the devices made by Navis-Ukraine. ") + "<br><b>" + Version + "</b>");
 }
 
-/* have to be changed */
-void MainWindow::write_NMEA_Data_SLOT(const QString &str)
+void MainWindow::write_NMEA_Data_SLOT(const QString &str, int index)
 {
     QByteArray K = str.toLocal8Bit();
-    serialPorts[0]->getPort()->write(K);
+    serialPorts[index]->getPort()->write(K);
 }
 
-void MainWindow::readDatafromPort()
+void MainWindow::readDatafromPort(QSerialPort* port, int index)
 {
-    QByteArray data = serialPorts[0]->getPort()->readAll();
-
-    dialog->Show_NMEA_Text(data);
+    QByteArray data = port->readAll();
+    dialog->Show_NMEA_Text(data, index+1);
 }
-/*********************************************/
-
-//void MainWindow::Enable_Connect(bool Enable)
-//{
-//    ui->actionConnect_1->setEnabled(Enable);
-//}
-
-//void MainWindow::portErrorOccurred(QSerialPort::SerialPortError error)
-//{
-//    if (error == QSerialPort::ResourceError)
-//    {
-//        emit handlePortError()
-//    }
-//}
 
 void MainWindow::Show_Hide_Slot(bool enable)
 {
@@ -317,59 +265,163 @@ void MainWindow::ZDA_Slot(const struct POHPR &)
 
 }
 
-void MainWindow::addPorts(unsigned int number)
+void MainWindow::addPorts(int number)
 {
-    int portsExist = serialPortActions.size();
-    for (unsigned int i = portsExist; i < number + portsExist; ++i) {
+    int portsExist = serialPorts.size();
+    for (int i = portsExist; i < number + portsExist; ++i) {
         serialPorts.push_back(new SettingsDialog(&Settings, i+1));
 
-//        connect(serialPorts[i]->getPort(), SIGNAL(errorOccurred(QSerialPort::SerialPortError)),
-//                this, SLOT(handleError(QSerialPort::SerialPortError)));
+        QSerialPort* port = serialPorts[i]->getPort();
+        connect(port, &QSerialPort::errorOccurred, this, [i, port, this](){
+                    if (port->error() == QSerialPort::ResourceError)
+                        handlePortError(i); } );
 
-        serialPortActions.push_back({new SerialPortAction(ICON[SerialPortAction::DISCONNECT], "Connect serial port", SerialPortAction::CONNECT, serialPorts[i], this),
-                                                new SerialPortAction(ICON[SerialPortAction::SETTINGS], "Open port settings", SerialPortAction::SETTINGS, serialPorts[i], this),
-                                                new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete port", SerialPortAction::DELETE, serialPorts[i], this)});
+        connect(port, &QSerialPort::readyRead, this, [i, port, this](){ readDatafromPort(port, i); } );
+
+        serialPortActions.push_back({
+            new SerialPortAction(ICON[SerialPortAction::DISCONNECT], "Connect serial port", SerialPortAction::CONNECT, serialPorts[i], this),
+            new SerialPortAction(ICON[SerialPortAction::SETTINGS], "Open port settings", SerialPortAction::SETTINGS, serialPorts[i], this)
+        });
         for (int j = 0; j < serialPortActions[i].size(); ++j) {
             ui->mainToolBar->addAction(serialPortActions[i][j]);
-
-            connect(serialPortActions[i][j], SIGNAL(triggered()), serialPortActions[i][j], SLOT(slot1()));
-            connect(serialPortActions[i][j], SIGNAL(wasTriggered(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+            connect(serialPortActions[i][j], SIGNAL(triggered()), serialPortActions[i][j], SLOT(wasTriggered_slot()));
+            connect(serialPortActions[i][j], SIGNAL(wasTriggered_signal(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
         }
         ui->mainToolBar->addSeparator();
+
+        dialog->addTab("Port_"+QString::number(i+1));
     }
 }
 
-void MainWindow::addNewPort(SerialPortAction* action)
+/* Adds new port group to the toolbar */
+void MainWindow::addNewPort()
 {
-    ui->mainToolBar->removeAction(action);
+    ui->mainToolBar->removeAction(paddAction);
+    ui->mainToolBar->removeAction(pDeleteAction);
+
     portsNumber += 1;
     addPorts(1);
-    initAddAction();
+    ui->mainToolBar->addAction(pDeleteAction);
+    ui->mainToolBar->addAction(paddAction);
+    pDeleteAction->setEnabled(true);
 }
 
+/* Creates actions "Delete port" and "Add port" */
 void MainWindow::initAddAction()
 {
+    pDeleteAction = new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete port", SerialPortAction::DELETE, nullptr, this);
+    connect(pDeleteAction, SIGNAL(triggered()), pDeleteAction, SLOT(wasTriggered_slot()));
+    connect(pDeleteAction, SIGNAL(wasTriggered_signal(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+    if (portsNumber > 0) {
+        ui->mainToolBar->addAction(pDeleteAction);
+    }
+
     paddAction = new SerialPortAction(ICON[SerialPortAction::ADD], "Add new serial port", SerialPortAction::ADD, nullptr, this);
     ui->mainToolBar->addAction(paddAction);
-    connect(paddAction, SIGNAL(triggered()), paddAction, SLOT(slot1()));
-    connect(paddAction, SIGNAL(wasTriggered(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+    connect(paddAction, SIGNAL(triggered()), paddAction, SLOT(wasTriggered_slot()));
+    connect(paddAction, SIGNAL(wasTriggered_signal(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
 }
 
-/* Currently removes only the last in the list serial port */
+void MainWindow::openSerialPort(SerialPortAction* action)
+{
+    QSerialPort::SerialPortError portError = action->getSettingsDialog()->openSerialPort();
+    if (portError == QSerialPort::NoError) {
+        SettingsDialog::portSettings p = action->getSettingsDialog()->settings();
+        dialog->setEnabled(true);
+//        dialog->Read_Button_Settings(false);
+        dialog->setLocalEchoEnabled(p.localEchoEnabled);
+        action->setType(SerialPortAction::DISCONNECT);
+        action->setIcon(ICON[SerialPortAction::CONNECT]);
+
+        int index = 0;
+        SettingsDialog* port = action->getSettingsDialog();
+        while (port != serialPorts.at(index)) {
+            ++index;
+        }
+        if (index ==  portsNumber - 1) {
+            pDeleteAction->setEnabled(false);
+        }
+        QList<SerialPortAction*> asd = serialPortActions.at(index);
+        for (int i = 0; i < asd.size(); ++i) {
+            if (asd[i]->getType() == SerialPortAction::SETTINGS) {
+                asd[i]->setEnabled(false);
+            }
+        }
+        ui->statusBar->showMessage(tr("Connected to %1 : %2, %3, %4, %5, %6")
+                                   .arg(p.name).arg(p.baudRate).arg(p.dataBits)
+                                   .arg(p.parity).arg(p.stopBits).arg(p.flowControl));
+        emit dialog->portStateChanged_Signal(index + 1); // <- dialog has 1 additional tab 'main'
+    } else if (portError == QSerialPort::OpenError) {
+        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
+        ui->statusBar->showMessage(tr("Open error"));
+    } else {
+        QMessageBox::critical(this, tr("Error"), action->getSettingsDialog()->getPort()->errorString());
+        ui->statusBar->showMessage(tr("Configure error"));
+    }
+}
+
+/* Handle "ResourceError" of the port */
+void MainWindow::handlePortError(int index)
+{
+    closeSerialPort(serialPortActions[index][0]);
+    QMessageBox::critical(this, tr("Critical Error"), serialPorts[0]->getPort()->errorString());
+}
+
+void MainWindow::closeSerialPort(SerialPortAction* action)
+{
+    action->getSettingsDialog()->getPort()->close();
+    action->setType(SerialPortAction::CONNECT);
+    action->setIcon(ICON[SerialPortAction::DISCONNECT]);
+
+    int index = 0;
+    SettingsDialog* port = action->getSettingsDialog();
+    while (port != serialPorts[index]) {
+        ++index;
+    }
+    if (index ==  portsNumber - 1) {
+        pDeleteAction->setEnabled(true);
+    }
+    QList<SerialPortAction*> act = serialPortActions[index];
+    for (int i = 0; i < act.size(); ++i) {
+        if (act[i]->getType() == SerialPortAction::SETTINGS) {
+            act[i]->setEnabled(true);
+        }
+    }
+
+    ui->statusBar->showMessage(tr("Disconnected"));
+//    dialog->Read_Button_Settings(true);
+    //pohpr->Push_Read_Buton_Slot(false);
+    emit dialog->portStateChanged_Signal(index + 1);
+}
+
 void MainWindow::deletePort()
 {
-    if (serialPorts.size() <= 1) {
-        return;
-    }
     ui->mainToolBar->removeAction(paddAction);
+    ui->mainToolBar->removeAction(pDeleteAction);
+    ui->mainToolBar->removeAction(ui->mainToolBar->actions().last()); //remove separator
 
-    for (int j = 0; j < serialPortActions.last().size(); ++j) {
-        ui->mainToolBar->removeAction(serialPortActions.last()[j]);
+    QList<SerialPortAction*> portActions = serialPortActions.last();
+    for (int i = 0; i < portActions.size(); ++i) {
+        ui->mainToolBar->removeAction(portActions[i]);
+        delete portActions[i];
     }
+
+    delete serialPorts.last();
     serialPorts.pop_back();
     serialPortActions.pop_back();
     portsNumber -= 1;
-    initAddAction();
+    dialog->deleteTab();
+    if (portsNumber > 0) {
+        ui->mainToolBar->addAction(pDeleteAction);
+        portActions = serialPortActions.last();
+        for (int i = 0; i < portActions.size(); ++i) {
+            if (portActions[i]->getType() == SerialPortAction::DISCONNECT) {
+                pDeleteAction->setEnabled(false);
+                break;
+            }
+        }
+    }
+    ui->mainToolBar->addAction(paddAction);
 }
 
 void MainWindow::actTriggered(SerialPortAction* action)
@@ -381,7 +433,7 @@ void MainWindow::actTriggered(SerialPortAction* action)
     } else if (action->getType() == SerialPortAction::DISCONNECT) {
         closeSerialPort(action);
     } else if (action->getType() == SerialPortAction::ADD) {
-        addNewPort(action);
+        addNewPort();
     } else if (action->getType() == SerialPortAction::DELETE) {
         deletePort();
     }

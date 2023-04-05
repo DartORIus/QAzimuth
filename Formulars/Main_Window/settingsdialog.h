@@ -40,14 +40,14 @@ public:
     explicit SettingsDialog(QSettings*, unsigned int n, QWidget* parent = 0);
     ~SettingsDialog();
 
-    const portSettings& settings(void) const { return currentSettings; }
-    QSerialPort* getPort(void) { return port; }
-    QSerialPort::SerialPortError openSerialPort(void) const;
+    const portSettings& settings() const { return currentSettings; }
+    QSerialPort* getPort() { return port; }
+    QSerialPort::SerialPortError openSerialPort() const;
 //    void initPort(void);
 
 private slots:
     void showPortInfo(int idx);
-    void apply(void);
+    void apply();
     void checkCustomBaudRatePolicy(int idx);
 //    void handleError(QSerialPort::SerialPortError error);
 
@@ -57,9 +57,9 @@ private:
     portSettings currentSettings;
     QSettings* savedSettings;
     QIntValidator* intValidator;
-    void fillPortsParameters(void);
-    void fillPortsInfo(void);
-    void updateSettings(void);
+    void fillPortsParameters();
+    void fillPortsInfo();
+    void updateSettings();
     Ui::SettingsDialog *ui;
 };
 

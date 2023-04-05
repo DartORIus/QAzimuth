@@ -19,10 +19,10 @@ public:
     void setType(ACT_TYPES t) { type = t; }
 
 public slots:
-    void slot1();
+    void wasTriggered_slot();
 
 signals:
-    void wasTriggered(SerialPortAction*);
+    void wasTriggered_signal(SerialPortAction*);
 
 private:
     ACT_TYPES type;

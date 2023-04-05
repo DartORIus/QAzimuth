@@ -34,7 +34,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 signals:
-    void Show_NMEA_Text(const QByteArray&);
+//    void Show_NMEA_Text(const QByteArray&);
     void Sent_NMEA(QString&);
 
 public:
@@ -52,21 +52,22 @@ public slots:
 private slots:
     void closeSerialPort(SerialPortAction* action);
     void about();
-    void write_NMEA_Data_SLOT(const QString &); // <- fix
-    void readDatafromPort();            // <- fix
-//    void handleError(QSerialPort::SerialPortError error);
-//    void Enable_Connect(bool);
+    void write_NMEA_Data_SLOT(const QString &, int); // <- fix
+
+//    void readDatafromPort(QSerialPort*);
 
     void Resize_Slot(const QSize &);
     void Language_Change(QAction*);
     void ZDA_Slot(const struct POHPR &);
 private:
     void initAddAction();
-    void addPorts(unsigned int number = 1);
-    void addNewPort(SerialPortAction*);
+    void addPorts(int);
+    void addNewPort();
     void deletePort();
     void openSerialPort(SerialPortAction*);
+    void handlePortError(int);
     void initActionsConnections();
+    void readDatafromPort(QSerialPort*, int);            // <- fix
     void NMEA_Select();
     void ReadSettings();
     void WriteSettings();
@@ -89,8 +90,9 @@ private:
     RMC_Formular        *RMC_F;
     XY_Area             *XY_Wid;
 
-    unsigned int portsNumber;
+    int portsNumber;
     SerialPortAction* paddAction;
+    SerialPortAction* pDeleteAction;
     QList<SettingsDialog*> serialPorts;
     QList<QVector<SerialPortAction*>> serialPortActions;
 protected:

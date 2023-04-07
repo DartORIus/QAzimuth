@@ -72,7 +72,7 @@ public:
 
 public slots:
     void Find_Signal_Slot(double);
-    void Read_Button_Settings(bool);
+//    void Read_Button_Settings(bool);
     void Get_NMEA_SLOT(const QString &);
     void Show_NMEA_Text(const QByteArray &, int);
     void isPortOpened_Slot(int);

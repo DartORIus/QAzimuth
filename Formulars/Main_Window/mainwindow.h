@@ -1,4 +1,3 @@
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -34,7 +33,6 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 signals:
-//    void Show_NMEA_Text(const QByteArray&);
     void Sent_NMEA(QString&);
 
 public:
@@ -52,27 +50,24 @@ public slots:
 private slots:
     void closeSerialPort(SerialPortAction* action);
     void about();
-    void write_NMEA_Data_SLOT(const QString &, int); // <- fix
-
-//    void readDatafromPort(QSerialPort*);
-
+    void write_NMEA_Data_SLOT(const QString &, int);
     void Resize_Slot(const QSize &);
     void Language_Change(QAction*);
-    void ZDA_Slot(const struct POHPR &);
+//    void ZDA_Slot(const struct POHPR &);
 private:
-    void initAddAction();
+    void initAddDeleteActions();
     void addPorts(int);
     void addNewPort();
     void deletePort();
     void openSerialPort(SerialPortAction*);
     void handlePortError(int);
     void initActionsConnections();
-    void readDatafromPort(QSerialPort*, int);            // <- fix
+    void readDatafromPort(QSerialPort*, int);
     void NMEA_Select();
     void ReadSettings();
     void WriteSettings();
-//    void initPort(unsigned int);
 
+    Ui::MainWindow *ui;
     QSettings Settings;
 
     QStringList Languiges();
@@ -80,7 +75,6 @@ private:
 
     Parse_NMEA *parse_nmea;
 
-    Ui::MainWindow *ui;
     Dialog              *dialog;
     Coord_QW            *coord;
     Course_Heeling_Trim *CHT;

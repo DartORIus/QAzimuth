@@ -1,3 +1,6 @@
+#include <QSettings>
+#include <QCoreApplication>
+
 #include "POHPR.h"
 
 #define Min_H 220
@@ -5,6 +8,8 @@
 
 POHPR_W::POHPR_W()
 {
+    readSettings();
+
     Graphic::Add_Graphic(0, 360, "Course");
     Graphic::Add_Graphic(-90, 90, "Roll");
     Graphic::Add_Graphic(-90, 90, "Pitch");
@@ -12,12 +17,17 @@ POHPR_W::POHPR_W()
     Graphic::Add_Time_Label();
 }
 
-
 POHPR_W::~POHPR_W()
 {
-
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    settings.setValue("/Windows/POHPR/geometry", saveGeometry());
 }
 
+void POHPR_W::readSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    restoreGeometry(settings.value("/Windows/POHPR/geometry").toByteArray());
+}
 
 void POHPR_W::Parse_POHPR_Slot(const struct POHPR &POHPR)
 {

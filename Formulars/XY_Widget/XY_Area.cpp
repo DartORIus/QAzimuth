@@ -1,11 +1,13 @@
 #include "XY_Area.h"
 #include "ui_XY_Area.h"
+#include <QSettings>
+#include <QCoreApplication>
 
 XY_Area::XY_Area(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::XY_Area)
+    QWidget(parent), ui(new Ui::XY_Area)
 {
     ui->setupUi(this);
+    readSettings();
     setWindowTitle("XY_Area");
 
     XV_Wid = new XY_Widget(QString("X_V"));
@@ -25,7 +27,15 @@ XY_Area::XY_Area(QWidget *parent) :
 
 XY_Area::~XY_Area()
 {
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    settings.setValue("/Windows/XY_Formular/geometry", saveGeometry());
     delete ui;
+}
+
+void XY_Area::readSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    restoreGeometry(settings.value("/Windows/XY_Formular/geometry").toByteArray());
 }
 
 void XY_Area::Clear()

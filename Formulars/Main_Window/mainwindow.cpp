@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QTranslator>
 #include <QAction>
+#include <QCoreApplication>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -12,11 +13,11 @@
 #include "../../parse_nmea.h"
 #include "../show_parse.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
-    Settings("Navis-Ukraine/QAzimuth", "QAzimuth"), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+    Settings(QCoreApplication::organizationName(), QCoreApplication::applicationName())
 {
     ui->setupUi(this);
-    ui->mainToolBar->clear();
 
     dialog = new Dialog(Settings);
     setCentralWidget(dialog);
@@ -60,7 +61,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     portsNumber = Settings.value("serialPorts/number", 0).toInt();
     addPorts(portsNumber);
-    initAddAction();
+    initAddDeleteActions();
+
     initActionsConnections();
 
     connect(dialog,             SIGNAL(Write_NMEA_Data_SIGNAL(const QString &, int)),
@@ -103,8 +105,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR&)),
             pohpr,              SLOT(Parse_POHPR_Slot(const POHPR &)));
 
-    connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR &)),
-            this,               SLOT(ZDA_Slot(const POHPR &)));
+//    connect(parse_nmea,         SIGNAL(Parse_POHPR_Signal(const POHPR &)),
+//            this,               SLOT(ZDA_Slot(const POHPR &)));
 
     connect(parse_nmea, SIGNAL(Parse_POUGT_Signal(const POUGT&)),
             POUGT_F,    SLOT(Parse_POUGT_Slot(const POUGT&)));
@@ -166,12 +168,21 @@ void MainWindow::closeEvent(QCloseEvent *)
 void MainWindow::ReadSettings()
 {
     Settings.beginGroup("/Windows");
-        dialog      ->setHidden(Settings.value("/NMEA_DIalog").toBool());
-        coord       ->setHidden(Settings.value("/Coord").toBool());
-        CHT         ->setHidden(Settings.value("/CHT").toBool());
-        pohpr       ->setHidden(Settings.value("/POHPR").toBool());
-        POUGT_F     ->setHidden(Settings.value("/POUGT_Formular").toBool());
-        RMC_F       ->setHidden(Settings.value("/RMC_Formular").toBool());
+    const QByteArray geometry = Settings.value("/MainWindow/geometry", QByteArray()).toByteArray();
+    if (geometry.isEmpty()) {
+        const QRect availableGeometry = screen()->availableGeometry();
+        resize(availableGeometry.width() / 3, availableGeometry.height() / 2);
+        move((availableGeometry.width() - width()) / 2,
+        (availableGeometry.height() - height()) / 2);
+    } else {
+        restoreGeometry(geometry);
+    }
+    dialog      ->setHidden(Settings.value("/NMEA_DIalog/hidden").toBool());
+    coord       ->setVisible(Settings.value("/Coord/hidden").toBool());
+    CHT         ->setVisible(Settings.value("/CHT/hidden").toBool());
+    pohpr       ->setVisible(Settings.value("/POHPR/hidden").toBool());
+    POUGT_F     ->setVisible(Settings.value("/POUGT_Formular/hidden").toBool());
+    RMC_F       ->setVisible(Settings.value("/RMC_Formular/hidden").toBool());
     Settings.endGroup();
 }
 
@@ -184,12 +195,13 @@ void MainWindow::WriteSettings()
     Settings.endGroup();
 
     Settings.beginGroup("/Windows");
-        Settings.setValue("/NMEA_DIalog",   dialog->isHidden());
-        Settings.setValue("/Coord",         coord->isHidden());
-        Settings.setValue("/CHT",           CHT->isHidden());
-        Settings.setValue("/POHPR",         pohpr->isHidden());
-        Settings.setValue("/POUGT_Formular",POUGT_F->isHidden());
-        Settings.setValue("/RMC_Formular",  RMC_F->isHidden());
+        Settings.setValue("/MainWindow/geometry",   saveGeometry());
+        Settings.setValue("/NMEA_DIalog/hidden",    dialog->isHidden());
+        Settings.setValue("/Coord/hidden",          coord->isVisible());
+        Settings.setValue("/CHT/hidden",            CHT->isVisible());
+        Settings.setValue("/POHPR/hidden",          pohpr->isVisible());
+        Settings.setValue("/POUGT_Formular/hidden", POUGT_F->isVisible());
+        Settings.setValue("/RMC_Formular/hidden",   RMC_F->isVisible());
     Settings.endGroup();
     Settings.setValue("serialPorts/number", portsNumber);
 }
@@ -260,10 +272,9 @@ void MainWindow::Language_Change(QAction* )
     QMessageBox::about(this, "QAzimuth", tr("You must restart program for set chosen language"));
 }
 
-void MainWindow::ZDA_Slot(const struct POHPR &)
-{
-
-}
+//void MainWindow::ZDA_Slot(const struct POHPR &)
+//{
+//}
 
 void MainWindow::addPorts(int number)
 {
@@ -307,7 +318,7 @@ void MainWindow::addNewPort()
 }
 
 /* Creates actions "Delete port" and "Add port" */
-void MainWindow::initAddAction()
+void MainWindow::initAddDeleteActions()
 {
     pDeleteAction = new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete port", SerialPortAction::DELETE, nullptr, this);
     connect(pDeleteAction, SIGNAL(triggered()), pDeleteAction, SLOT(wasTriggered_slot()));
@@ -398,7 +409,7 @@ void MainWindow::deletePort()
 {
     ui->mainToolBar->removeAction(paddAction);
     ui->mainToolBar->removeAction(pDeleteAction);
-    ui->mainToolBar->removeAction(ui->mainToolBar->actions().last()); //remove separator
+    ui->mainToolBar->removeAction(ui->mainToolBar->actions().last()); //separator
 
     QList<SerialPortAction*> portActions = serialPortActions.last();
     for (int i = 0; i < portActions.size(); ++i) {
@@ -441,7 +452,7 @@ void MainWindow::actTriggered(SerialPortAction* action)
 
 void MainWindow::initActionsConnections()
 {
-    connect(ui->actionQuit,         SIGNAL(triggered()), this,        SLOT(close()));
+    connect(ui->actionExit,         SIGNAL(triggered()), this,        SLOT(close()));
     //connect(ui->actionClear,      SIGNAL(triggered()), console,   SLOT(clear()));
     connect(ui->actionAbout,        SIGNAL(triggered()), this,        SLOT(about()));
     connect(ui->actionAboutQt,      SIGNAL(triggered()), qApp,        SLOT(aboutQt()));

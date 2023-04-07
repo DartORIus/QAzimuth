@@ -29,6 +29,7 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
     ComboBox->setPalette(p);
     ComboBox->setMaximumHeight(HEIGHT);
     ComboBox->setMaxVisibleItems(5);
+    ComboBox->setInsertPolicy(QComboBox::InsertAtTop);
 
     Read_Dialog_ComboBox();
 
@@ -121,73 +122,26 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
 
 Dialog::~Dialog()
 {
-    int S =     ComboBox->currentIndex();
-    if(S < 4)
-        S = 4;
-
-    QA_Settings->beginGroup("/Dialog_ComboBox");
-    QA_Settings->setValue("/Send_NMEA_0", ComboBox->itemText(S));
-    QA_Settings->setValue("/Send_NMEA_1", ComboBox->itemText(S-1));
-    QA_Settings->setValue("/Send_NMEA_2", ComboBox->itemText(S-2));
-    QA_Settings->setValue("/Send_NMEA_3", ComboBox->itemText(S-3));
-    QA_Settings->setValue("/Send_NMEA_4", ComboBox->itemText(S-4));
-    QA_Settings->endGroup();
-}
-
-void Dialog::isPortOpened_Slot(int i)
-{
-    Disable_Enable_Send(portsOpenStatus[i]);
-}
-
-void Dialog::changeSendStatus_Slot(int i)
-{
-    portsOpenStatus[i] = !portsOpenStatus[i];
-    if (i == ptabWidget->currentIndex()) {
-        Disable_Enable_Send(portsOpenStatus[i]);
+    QA_Settings->beginWriteArray("/Dialog_ComboBox");
+    for (int i = 0; i < ComboBox->maxVisibleItems(); ++i) {
+        QA_Settings->setArrayIndex(i);
+        QA_Settings->setValue("/Send_NMEA_"+QString::number(i), ComboBox->itemText(i));
     }
-}
-
-void Dialog::addTab(const QString& str)
-{
-    Show_Text_QW* newTab = new Show_Text_QW;
-    tabs.push_back(newTab);
-//    QPalette Show_Text_Palette = newTab->palette();
-//    Show_Text_Palette.setColor(QPalette::Base, QColor(100, 200, 255, 255));
-//    newTab->setPalette(Show_Text_Palette);
-    ptabWidget->addTab(newTab, str);
-    portsOpenStatus.push_back(false);
-}
-
-void Dialog::deleteTab()
-{
-    ptabWidget->removeTab(ptabWidget->count() - 1);
-    delete tabs.last();
-    tabs.pop_back();
-    portsOpenStatus.pop_back();
+    QA_Settings->endArray();
 }
 
 void Dialog::Read_Dialog_ComboBox()
 {
-    QA_Settings->beginGroup("/Dialog_ComboBox");
-        QString S0 = QA_Settings->value("/Send_NMEA_0", "").toString();
-        QString S1 = QA_Settings->value("/Send_NMEA_1", "").toString();
-        QString S2 = QA_Settings->value("/Send_NMEA_2", "").toString();
-        QString S3 = QA_Settings->value("/Send_NMEA_3", "").toString();
-        QString S4 = QA_Settings->value("/Send_NMEA_4", "").toString();
-    QA_Settings->endGroup();
-
-    if(S0.size() > 0)
-        ComboBox->addItem(S0);
-    if(S1.size() > 0)
-        ComboBox->addItem(S1);
-    if(S2.size() > 0)
-        ComboBox->addItem(S2);
-    if(S3.size() > 0)
-        ComboBox->addItem(S3);
-    if(S4.size() > 0)
-        ComboBox->addItem(S4);
-
-    ComboBox->setCurrentIndex(4);
+    int size = QA_Settings->beginReadArray("/Dialog_ComboBox");
+    for (int i = 0; i < size; ++i) {
+        QA_Settings->setArrayIndex(i);
+        QString str = QA_Settings->value("/Send_NMEA_"+QString::number(i), "").toString();
+        if(str.size() > 0) {
+            ComboBox->addItem(str);
+        }
+    }
+    QA_Settings->endArray();
+    ComboBox->setCurrentIndex(-1);
 }
 
 void Dialog::Control_Sum(const QString &str)
@@ -484,19 +438,51 @@ void Dialog::Find_Signal_Slot(double Cents)
     tabs.at(tabIndex)->Find_Slot(Cents);
 }
 
-void Dialog::Read_Button_Settings(bool Enable)
-{
-    if(Open_File.isOpen())
-    {
-        Read_All_Button->setEnabled(Enable);
-        Read_File_Button->setEnabled(Enable);
-        slider->setEnabled(Enable);
-        spin->setEnabled(Enable);
-    }
-}
+//void Dialog::Read_Button_Settings(bool Enable)
+//{
+//    if(Open_File.isOpen())
+//    {
+//        Read_All_Button->setEnabled(Enable);
+//        Read_File_Button->setEnabled(Enable);
+//        slider->setEnabled(Enable);
+//        spin->setEnabled(Enable);
+//    }
+//}
 
 void Dialog::Get_NMEA_SLOT(const QString &NMEA_String)
 {
     ComboBox->setCurrentText(NMEA_String);
     Sent_NMEA->animateClick();
+}
+
+void Dialog::isPortOpened_Slot(int i)
+{
+    Disable_Enable_Send(portsOpenStatus[i]);
+}
+
+void Dialog::changeSendStatus_Slot(int i)
+{
+    portsOpenStatus[i] = !portsOpenStatus[i];
+    if (i == ptabWidget->currentIndex()) {
+        Disable_Enable_Send(portsOpenStatus[i]);
+    }
+}
+
+void Dialog::addTab(const QString& str)
+{
+    Show_Text_QW* newTab = new Show_Text_QW;
+    tabs.push_back(newTab);
+//    QPalette Show_Text_Palette = newTab->palette();
+//    Show_Text_Palette.setColor(QPalette::Base, QColor(100, 200, 255, 255));
+//    newTab->setPalette(Show_Text_Palette);
+    ptabWidget->addTab(newTab, str);
+    portsOpenStatus.push_back(false);
+}
+
+void Dialog::deleteTab()
+{
+    ptabWidget->removeTab(ptabWidget->count() - 1);
+    delete tabs.last();
+    tabs.pop_back();
+    portsOpenStatus.pop_back();
 }

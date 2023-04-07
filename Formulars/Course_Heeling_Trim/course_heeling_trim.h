@@ -15,6 +15,7 @@ class Course_Heeling_Trim : public QWidget
     Q_OBJECT
 public:
     explicit Course_Heeling_Trim(QWidget *parent = 0);
+    ~Course_Heeling_Trim();
     
 signals:
     void Hide_Signal(const QSize &);
@@ -22,6 +23,7 @@ public slots:
     void Parse_POHPR_Slot(const struct POHPR &);
 
 private:
+    void readSettings();
     void hideEvent(QHideEvent *);
     Course_QW *course;
     Roll_QW *roll;

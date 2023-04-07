@@ -27,6 +27,7 @@ public slots:
 private slots:
     void Parse_POHPR_Slot(const struct POHPR &);
 private:
+    void readSettings();
     QString Find_Text;
 
 

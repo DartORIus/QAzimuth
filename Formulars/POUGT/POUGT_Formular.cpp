@@ -2,9 +2,13 @@
 #include <QGridLayout>
 #include <QFont>
 #include <math.h>
+#include <QSettings>
+#include <QCoreApplication>
 
 POUGT_Formular::POUGT_Formular()
 {
+    readSettings();
+
     Graphic::Add_Graphic(-10, 10, "Line");
     Graphic::Add_Graphic(-50, 50, "Diff");
 
@@ -15,7 +19,14 @@ POUGT_Formular::POUGT_Formular()
 
 POUGT_Formular::~POUGT_Formular()
 {
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    settings.setValue("/Windows/POUGT_Formular/geometry", saveGeometry());
+}
 
+void POUGT_Formular::readSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    restoreGeometry(settings.value("/Windows/POUGT_Formular/geometry").toByteArray());
 }
 
 void POUGT_Formular::Parse_POUGT_Slot(const struct POUGT &POUGT)

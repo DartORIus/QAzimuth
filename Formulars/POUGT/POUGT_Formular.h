@@ -24,6 +24,7 @@ private slots:
     void Parse_POUGT_Slot(const struct POUGT &);
     virtual void Find_Slot();
 private:
+    void readSettings();
     QString Find_Text;
 protected:
 

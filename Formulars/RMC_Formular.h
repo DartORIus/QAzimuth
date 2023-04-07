@@ -9,8 +9,12 @@ class RMC_Formular : public Graphic
 public:
     RMC_Formular();
     ~RMC_Formular();
+
 public slots:
     void Parse_GPRMC_Signal(const struct GPRMC &);
+
+private:
+    void readSettings();
 };
 
 #endif // RMC_FORMULAR_H

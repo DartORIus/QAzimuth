@@ -11,12 +11,12 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent) :
     QLabel *Satelits_L     = new QLabel(tr("Satelits:"));
     QLabel *Current_Coord  = new QLabel(tr("Current coordinates: "));
 
-            FON.setBold(true);
-            Current_Coord->setFont(FON);
+    FON.setBold(true);
+    Current_Coord->setFont(FON);
     QLabel *Lat_L          = new QLabel(tr("C_Lat: "));
     QLabel *Long_L         = new QLabel(tr("C_Long: "));
     QLabel *Average_Coord  = new QLabel(tr("Average coordinates: "));
-            Average_Coord->setFont(FON);
+    Average_Coord->setFont(FON);
     QLabel *Average_Long_L = new QLabel(tr("A_Long: "));
     QLabel *Average_Lat_L  = new QLabel(tr("A_Lat: "));
     QLabel *RMS_L          = new QLabel(tr("RMSD: "));
@@ -116,6 +116,7 @@ Coord_QW::~Coord_QW()
         Settings->setValue("/Long",    Long_Spinbox->value());
         Settings->setValue("/Scale",   Scale_Spinbox->value());
     Settings->endGroup();
+    Settings->setValue("/Windows/Coord/geometry", saveGeometry());
 }
 
 void Coord_QW::Read_Setting()
@@ -125,28 +126,26 @@ void Coord_QW::Read_Setting()
         Long_Spinbox ->setValue(Settings->value("/Long").toDouble());
         Scale_Spinbox->setValue(Settings->value("/Scale").toInt());
     Settings->endGroup();
+    restoreGeometry(Settings->value("/Windows/Coord/geometry").toByteArray());
 }
 
 void Coord_QW::Parse_GPGGA_Slot(const struct GPGGA &GPGGA)
 {
     this->Time = QString::number(GPGGA.time);
 
-        if(GPGGA.time < 100000)
-            Time.push_front('0');
-        Time.push_back("00");
+    if(GPGGA.time < 100000)
+        Time.push_front('0');
+    Time.push_back("00");
 
       //  Time[9] = Time[7];
        // Time[8] = Time[6];
-        Time[7] = Time[5];
-        Time[6] = Time[4];
-        Time[5] = ':';
-        Time[4] = Time[3];
-        Time[3] = Time[2];
-        Time[2] = ':';
-
-        Time.push_back("  ");
-//        Time[8] = ' ';
-//        Time[9] = ' ';
+    Time[7] = Time[5];
+    Time[6] = Time[4];
+    Time[5] = ':';
+    Time[4] = Time[3];
+    Time[3] = Time[2];
+    Time[2] = ':';
+    Time.push_back("  ");
 
     Time_VL->setText(this->Time);
 

@@ -1,7 +1,10 @@
 #include "RMC_Formular.h"
+#include <QSettings>
+#include <QCoreApplication>
 
 RMC_Formular::RMC_Formular()
 {
+    readSettings();
     Graphic::Add_Graphic(0, 360, "Course");
 
     Graphic::Add_Label("Time");
@@ -11,7 +14,14 @@ RMC_Formular::RMC_Formular()
 
 RMC_Formular::~RMC_Formular()
 {
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    settings.setValue("/Windows/RMC_Formular/geometry", saveGeometry());
+}
 
+void RMC_Formular::readSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    restoreGeometry(settings.value("/Windows/RMC_Formular/geometry").toByteArray());
 }
 
 void RMC_Formular::Parse_GPRMC_Signal(const struct GPRMC &RMC)

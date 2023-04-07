@@ -25,12 +25,12 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuCalls">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>Calls</string>
+     <string>File</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionQuit"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -55,7 +55,7 @@
      <string>NMEA</string>
     </property>
    </widget>
-   <addaction name="menuCalls"/>
+   <addaction name="menuFile"/>
    <addaction name="menuTools"/>
    <addaction name="menuView"/>
    <addaction name="menuNMEA"/>
@@ -105,13 +105,12 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="actionQuit">
-   <property name="icon">
-    <iconset resource="../../terminal.qrc">
-     <normaloff>:/images/application-exit.png</normaloff>:/images/application-exit.png</iconset>
-   </property>
+  <action name="actionExit">
    <property name="text">
-    <string>&amp;Quit</string>
+    <string>E&amp;xit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>

@@ -59,9 +59,31 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *XY_graph_Actin = ui->menuView->addAction("XY_Formular");
     connect(XY_graph_Actin, SIGNAL(triggered()), XY_Wid, SLOT(show()));
 
+    QAction* OpenFile_Action = new QAction(tr("&Open File"), this);
+    ui->menuFile->addAction(OpenFile_Action);
+    ui->menuFile->addSeparator();
+    OpenFile_Action->setShortcut(QKeySequence::Open);
+    connect(OpenFile_Action, SIGNAL(triggered()), dialog, SLOT(Open_File_Slot()));
+
+    QAction* SaveFile_Action = new QAction(tr("&Save"), this);
+    ui->menuFile->addAction(SaveFile_Action);
+    ui->menuFile->addSeparator();
+    SaveFile_Action->setShortcut(QKeySequence::Save);
+    connect(SaveFile_Action, SIGNAL(triggered()), dialog, SLOT(Save_File_Slot()));
+
+    QAction* Exit_Action = new QAction(tr("E&xit"), this);
+    ui->menuFile->addAction(Exit_Action);
+    Exit_Action->setShortcut(QKeySequence::Quit);
+    connect(Exit_Action, SIGNAL(triggered()), this, SLOT(close()));
+
     portsNumber = Settings.value("serialPorts/number", 0).toInt();
     addPorts(portsNumber);
     initAddDeleteActions();
+    ui->menuTools->addSeparator();
+    QAction* Show_Hide_Toolbar_Action = new QAction("Show/Hide Tool Bar", this);
+    ui->menuTools->addAction(Show_Hide_Toolbar_Action);
+    connect(Show_Hide_Toolbar_Action, &QAction::triggered, this, [this](){
+                ui->mainToolBar->setVisible(!(ui->mainToolBar->isVisible())); } );
 
     initActionsConnections();
 
@@ -184,6 +206,7 @@ void MainWindow::ReadSettings()
     POUGT_F     ->setVisible(Settings.value("/POUGT_Formular/hidden").toBool());
     RMC_F       ->setVisible(Settings.value("/RMC_Formular/hidden").toBool());
     Settings.endGroup();
+    ui->mainToolBar->setVisible(Settings.value("/Toolbar/visible", true).toBool());
 }
 
 void MainWindow::WriteSettings()
@@ -204,6 +227,7 @@ void MainWindow::WriteSettings()
         Settings.setValue("/RMC_Formular/hidden",   RMC_F->isVisible());
     Settings.endGroup();
     Settings.setValue("serialPorts/number", portsNumber);
+    Settings.setValue("/Toolbar/visible", ui->mainToolBar->isVisible());
 }
 
 void MainWindow::about()
@@ -290,8 +314,8 @@ void MainWindow::addPorts(int number)
         connect(port, &QSerialPort::readyRead, this, [i, port, this](){ readDatafromPort(port, i); } );
 
         serialPortActions.push_back({
-            new SerialPortAction(ICON[SerialPortAction::DISCONNECT], "Connect serial port", SerialPortAction::CONNECT, serialPorts[i], this),
-            new SerialPortAction(ICON[SerialPortAction::SETTINGS], "Open port settings", SerialPortAction::SETTINGS, serialPorts[i], this)
+            new SerialPortAction(ICON[SerialPortAction::DISCONNECT], "Connect Serial Port", SerialPortAction::CONNECT, serialPorts[i], this),
+            new SerialPortAction(ICON[SerialPortAction::SETTINGS], "Open Port Settings", SerialPortAction::SETTINGS, serialPorts[i], this)
         });
         for (int j = 0; j < serialPortActions[i].size(); ++j) {
             ui->mainToolBar->addAction(serialPortActions[i][j]);
@@ -320,17 +344,22 @@ void MainWindow::addNewPort()
 /* Creates actions "Delete port" and "Add port" */
 void MainWindow::initAddDeleteActions()
 {
-    pDeleteAction = new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete port", SerialPortAction::DELETE, nullptr, this);
+    pDeleteAction = new SerialPortAction(ICON[SerialPortAction::DELETE], "Delete Port", SerialPortAction::DELETE, nullptr, this);
     connect(pDeleteAction, SIGNAL(triggered()), pDeleteAction, SLOT(wasTriggered_slot()));
     connect(pDeleteAction, SIGNAL(wasTriggered_signal(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+    pDeleteAction->setEnabled(false);
     if (portsNumber > 0) {
         ui->mainToolBar->addAction(pDeleteAction);
+        pDeleteAction->setEnabled(true);
     }
 
-    paddAction = new SerialPortAction(ICON[SerialPortAction::ADD], "Add new serial port", SerialPortAction::ADD, nullptr, this);
-    ui->mainToolBar->addAction(paddAction);
+    paddAction = new SerialPortAction(ICON[SerialPortAction::ADD], "Add New Serial Port", SerialPortAction::ADD, nullptr, this);
     connect(paddAction, SIGNAL(triggered()), paddAction, SLOT(wasTriggered_slot()));
     connect(paddAction, SIGNAL(wasTriggered_signal(SerialPortAction*)), this, SLOT(actTriggered(SerialPortAction*)));
+
+    ui->mainToolBar->addAction(paddAction);
+    ui->menuTools->addAction(paddAction);
+    ui->menuTools->addAction(pDeleteAction);
 }
 
 void MainWindow::openSerialPort(SerialPortAction* action)
@@ -339,7 +368,6 @@ void MainWindow::openSerialPort(SerialPortAction* action)
     if (portError == QSerialPort::NoError) {
         SettingsDialog::portSettings p = action->getSettingsDialog()->settings();
         dialog->setEnabled(true);
-//        dialog->Read_Button_Settings(false);
         dialog->setLocalEchoEnabled(p.localEchoEnabled);
         action->setType(SerialPortAction::DISCONNECT);
         action->setIcon(ICON[SerialPortAction::CONNECT]);
@@ -400,7 +428,6 @@ void MainWindow::closeSerialPort(SerialPortAction* action)
     }
 
     ui->statusBar->showMessage(tr("Disconnected"));
-//    dialog->Read_Button_Settings(true);
     //pohpr->Push_Read_Buton_Slot(false);
     emit dialog->portStateChanged_Signal(index + 1);
 }
@@ -410,6 +437,7 @@ void MainWindow::deletePort()
     ui->mainToolBar->removeAction(paddAction);
     ui->mainToolBar->removeAction(pDeleteAction);
     ui->mainToolBar->removeAction(ui->mainToolBar->actions().last()); //separator
+    pDeleteAction->setEnabled(false);
 
     QList<SerialPortAction*> portActions = serialPortActions.last();
     for (int i = 0; i < portActions.size(); ++i) {
@@ -423,6 +451,7 @@ void MainWindow::deletePort()
     portsNumber -= 1;
     dialog->deleteTab();
     if (portsNumber > 0) {
+        pDeleteAction->setEnabled(true);
         ui->mainToolBar->addAction(pDeleteAction);
         portActions = serialPortActions.last();
         for (int i = 0; i < portActions.size(); ++i) {
@@ -452,7 +481,7 @@ void MainWindow::actTriggered(SerialPortAction* action)
 
 void MainWindow::initActionsConnections()
 {
-    connect(ui->actionExit,         SIGNAL(triggered()), this,        SLOT(close()));
+//    connect(ui->Exit_Action,         SIGNAL(triggered()), this,        SLOT(close()));
     //connect(ui->actionClear,      SIGNAL(triggered()), console,   SLOT(clear()));
     connect(ui->actionAbout,        SIGNAL(triggered()), this,        SLOT(about()));
     connect(ui->actionAboutQt,      SIGNAL(triggered()), qApp,        SLOT(aboutQt()));

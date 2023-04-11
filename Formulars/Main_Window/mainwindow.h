@@ -47,6 +47,7 @@ public:
 public slots:
     void Show_Hide_Slot(bool);
     void actTriggered(SerialPortAction*);
+    void addNewPort();
 private slots:
     void closeSerialPort(SerialPortAction* action);
     void about();
@@ -57,7 +58,6 @@ private slots:
 private:
     void initAddDeleteActions();
     void addPorts(int);
-    void addNewPort();
     void deletePort();
     void openSerialPort(SerialPortAction*);
     void handlePortError(int);

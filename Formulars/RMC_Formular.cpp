@@ -1,8 +1,8 @@
+#include <QByteArray>
 #include "RMC_Formular.h"
-#include <QSettings>
-#include <QCoreApplication>
 
-RMC_Formular::RMC_Formular()
+RMC_Formular::RMC_Formular(QSettings& S)
+    : Settings{S}
 {
     readSettings();
     Graphic::Add_Graphic(0, 360, "Course");
@@ -14,14 +14,15 @@ RMC_Formular::RMC_Formular()
 
 RMC_Formular::~RMC_Formular()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    settings.setValue("/Windows/RMC_Formular/geometry", saveGeometry());
+    Settings.setValue("/Windows/RMC_Formular/geometry", saveGeometry());
 }
 
 void RMC_Formular::readSettings()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    restoreGeometry(settings.value("/Windows/RMC_Formular/geometry").toByteArray());
+    const QByteArray geometry = Settings.value("/Windows/RMC_Formular/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
 }
 
 void RMC_Formular::Parse_GPRMC_Signal(const struct GPRMC &RMC)

@@ -1,12 +1,11 @@
-#include <QSettings>
-#include <QCoreApplication>
-
+#include <QByteArray>
 #include "POHPR.h"
 
 #define Min_H 220
 #define HEIGHT 100
 
-POHPR_W::POHPR_W()
+POHPR_W::POHPR_W(QSettings& S):
+    Settings{S}
 {
     readSettings();
 
@@ -19,14 +18,15 @@ POHPR_W::POHPR_W()
 
 POHPR_W::~POHPR_W()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    settings.setValue("/Windows/POHPR/geometry", saveGeometry());
+    Settings.setValue("/Windows/POHPR/geometry", saveGeometry());
 }
 
 void POHPR_W::readSettings()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    restoreGeometry(settings.value("/Windows/POHPR/geometry").toByteArray());
+    const QByteArray geometry = Settings.value("/Windows/POHPR/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
 }
 
 void POHPR_W::Parse_POHPR_Slot(const struct POHPR &POHPR)

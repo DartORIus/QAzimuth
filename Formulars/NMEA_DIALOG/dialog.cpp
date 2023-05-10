@@ -1,6 +1,5 @@
 #include "dialog.h"
 #include <QKeyEvent>
-#include <QtCore/QDebug>
 #include <QHBoxLayout>
 #include <QFileDialog>
 #include <QTextStream>
@@ -12,10 +11,9 @@
 
 #define HEIGHT 30
 
-Dialog::Dialog(QSettings &Settings, QWidget *parent)
-    : QWidget(parent), localEchoEnabled(true)
+Dialog::Dialog(QSettings &S, QWidget *parent)
+    : QWidget{parent}, localEchoEnabled{true}, Settings{S}
 {
-    QA_Settings = &Settings;
     ComboBox = new QComboBox;
 
     QFont font("Cascadia Mono SemiBold");
@@ -122,25 +120,25 @@ Dialog::Dialog(QSettings &Settings, QWidget *parent)
 
 Dialog::~Dialog()
 {
-    QA_Settings->beginWriteArray("/Dialog_ComboBox");
+    Settings.beginWriteArray("/Dialog_ComboBox");
     for (int i = 0; i < ComboBox->maxVisibleItems(); ++i) {
-        QA_Settings->setArrayIndex(i);
-        QA_Settings->setValue("/Send_NMEA_"+QString::number(i), ComboBox->itemText(i));
+        Settings.setArrayIndex(i);
+        Settings.setValue("/Send_NMEA_"+QString::number(i), ComboBox->itemText(i));
     }
-    QA_Settings->endArray();
+    Settings.endArray();
 }
 
 void Dialog::Read_Dialog_ComboBox()
 {
-    int size = QA_Settings->beginReadArray("/Dialog_ComboBox");
+    int size = Settings.beginReadArray("/Dialog_ComboBox");
     for (int i = 0; i < size; ++i) {
-        QA_Settings->setArrayIndex(i);
-        QString str = QA_Settings->value("/Send_NMEA_"+QString::number(i), "").toString();
+        Settings.setArrayIndex(i);
+        QString str = Settings.value("/Send_NMEA_"+QString::number(i), "").toString();
         if(str.size() > 0) {
             ComboBox->addItem(str);
         }
     }
-    QA_Settings->endArray();
+    Settings.endArray();
     ComboBox->setCurrentIndex(-1);
 }
 
@@ -388,8 +386,10 @@ void Dialog::Save_File_Slot()
     tr("NMEA File (*.nme)"));
 #endif
 
-    if (QFileInfo(fileName).suffix().isEmpty())
-        fileName.append(".nme");
+    if (fileName != "") {
+        if (QFileInfo(fileName).suffix().isEmpty())
+            fileName.append(".nme");
+    }
 
     Save_File_Funk(fileName);
 

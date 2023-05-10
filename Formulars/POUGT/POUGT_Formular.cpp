@@ -2,10 +2,10 @@
 #include <QGridLayout>
 #include <QFont>
 #include <math.h>
-#include <QSettings>
-#include <QCoreApplication>
+#include <QByteArray>
 
-POUGT_Formular::POUGT_Formular()
+POUGT_Formular::POUGT_Formular(QSettings& S)
+    : Settings{S}
 {
     readSettings();
 
@@ -19,14 +19,15 @@ POUGT_Formular::POUGT_Formular()
 
 POUGT_Formular::~POUGT_Formular()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    settings.setValue("/Windows/POUGT_Formular/geometry", saveGeometry());
+    Settings.setValue("/Windows/POUGT_Formular/geometry", saveGeometry());
 }
 
 void POUGT_Formular::readSettings()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    restoreGeometry(settings.value("/Windows/POUGT_Formular/geometry").toByteArray());
+    const QByteArray geometry = Settings.value("/Windows/POUGT_Formular/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
 }
 
 void POUGT_Formular::Parse_POUGT_Slot(const struct POUGT &POUGT)

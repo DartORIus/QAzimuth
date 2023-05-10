@@ -4,7 +4,8 @@
 #include <QDir>
 #include <QTranslator>
 #include <QAction>
-#include <QCoreApplication>
+#include <QScreen>
+#include <QByteArray>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -26,38 +27,43 @@ MainWindow::MainWindow(QWidget *parent)
     dialog_Action->setChecked(true);
     connect(dialog_Action, SIGNAL(triggered(bool)), dialog, SLOT(setVisible(bool)));
 
-    coord = new Coord_QW(Settings);
+    coord = new Coord_QW(Settings, this, Qt::Window);
     coord->setWindowTitle("Coord");
     QAction *Coord_Action = ui->menuView->addAction("Coord");
     connect(Coord_Action, SIGNAL(triggered()), coord, SLOT(show()));
 
     parse_nmea = new Parse_NMEA(ui->menuNMEA);
 
-    CHT = new Course_Heeling_Trim();
+    CHT = new Course_Heeling_Trim(Settings);
     CHT->setWindowTitle("Course Roll Pitch");
     QAction *CHT_Action = ui->menuView->addAction("Course Roll Pitch");
     connect(CHT_Action, SIGNAL(triggered()), CHT, SLOT(show()));
 
-    pohpr = new POHPR_W();
+    pohpr = new POHPR_W(Settings);
     pohpr->setWindowTitle("POHPR");
     QAction *pohpr_Action = ui->menuView->addAction("POHPR");
     connect(pohpr_Action, SIGNAL(triggered()), pohpr, SLOT(show()));
 
-    POUGT_F = new POUGT_Formular();
+    POUGT_F = new POUGT_Formular(Settings);
     POUGT_F->setWindowTitle("POUGT");
     QAction *pougt_Action = ui->menuView->addAction("POUGT");
     connect(pougt_Action, SIGNAL(triggered()), POUGT_F, SLOT(show()));
 
     Show_parse *Show_Parse_NMEA = new Show_parse;
 
-    RMC_F = new RMC_Formular();
+    RMC_F = new RMC_Formular(Settings);
     RMC_F->setWindowTitle("RMC");
     QAction *RMC_Action = ui->menuView->addAction("RMC");
     connect(RMC_Action, SIGNAL(triggered()), RMC_F, SLOT(show()));
 
-    XY_Wid = new XY_Area();
+    XY_Wid = new XY_Area(Settings);
     QAction *XY_graph_Actin = ui->menuView->addAction("XY_Formular");
     connect(XY_graph_Actin, SIGNAL(triggered()), XY_Wid, SLOT(show()));
+
+//    draw_GPS = new DrawGPS(Settings, this, Qt::Window);
+    draw_GPS = new DrawGPS(Settings);
+    QAction *GPS_action = ui->menuView->addAction("GPS Drawing");
+    connect(GPS_action, SIGNAL(triggered()), draw_GPS, SLOT(show()));
 
     QAction* OpenFile_Action = new QAction(tr("&Open File"), this);
     ui->menuFile->addAction(OpenFile_Action);
@@ -166,17 +172,18 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent *)
 {
     WriteSettings();
-    for (unsigned int i = 0; i < serialPorts.size(); ++i) {
+    for (int i = 0; i < serialPorts.size(); ++i) {
         delete(serialPorts[i]);
     }
-    for (unsigned int i = 0; i < serialPortActions.size(); ++i) {
-        QVector<SerialPortAction*> asd = serialPortActions.at(i);
+    for (int i = 0; i < serialPortActions.size(); ++i) {
+        QList<SerialPortAction*> asd = serialPortActions.at(i);
         for (int j = 0; j < asd.size(); ++j) {
             delete serialPortActions[i][j];
         }
     }
-    delete paddAction;
-    delete pDeleteAction;
+    delete(paddAction);
+    delete(pDeleteAction);
+//    delete(draw_GPS);
     delete(dialog);
     delete(pohpr);
     delete(coord);

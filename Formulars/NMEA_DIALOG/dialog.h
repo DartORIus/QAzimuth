@@ -11,7 +11,6 @@
 #include <QThread>
 #include <QTimer>
 #include <QSlider>
-#include <QString>
 #include <QSpinBox>
 #include <QSettings>
 #include <QDockWidget>
@@ -23,6 +22,7 @@ class Read_File_Thread : public QThread
     Q_OBJECT
 private:
     int period;
+
 public:
     Read_File_Thread() : period(10) {};
 
@@ -36,6 +36,7 @@ public:
     }
 signals:
     void Read_Line();
+
 public slots:
     void Set_Period(int P)
     {
@@ -61,6 +62,7 @@ signals:
    // void Set_Title(const QString &);
     void Show_Hide_Signal(bool);
     void portStateChanged_Signal(int);
+
 public:
     explicit Dialog(QSettings &, QWidget *parent = 0);
     ~Dialog();
@@ -121,9 +123,9 @@ private:
 
     qint64 File_Size;
 
-    QSettings *QA_Settings;
+    QSettings &Settings;
 
-    QTabWidget* ptabWidget;
+    QTabWidget *ptabWidget;
     QList<Show_Text_QW*> tabs;
     QList<bool> portsOpenStatus;
 

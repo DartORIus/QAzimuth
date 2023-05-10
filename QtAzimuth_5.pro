@@ -10,6 +10,7 @@ TARGET = QtAzimuth_5
 TEMPLATE = app
 
 SOURCES += \
+    Formulars/DrawGPS/drawgps.cpp \
     parse_nmea.cpp \
     main.cpp \
     Formulars/show_parse.cpp \
@@ -39,6 +40,7 @@ SOURCES += \
     Formulars/XY_Widget/XY_Area.cpp
 
 HEADERS  += \
+    Formulars/DrawGPS/drawgps.h \
     parse_nmea.h \
     Formulars/show_parse.h \
     Formulars/Course_Heeling_Trim/course_heeling_trim.h \

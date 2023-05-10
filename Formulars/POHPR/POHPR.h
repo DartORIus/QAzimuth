@@ -18,19 +18,16 @@ class POHPR_W : public Graphic
 {
     Q_OBJECT
 public:
-    explicit POHPR_W();
+    explicit POHPR_W(QSettings&);
     ~POHPR_W();
-signals:
-
-public slots:
 
 private slots:
     void Parse_POHPR_Slot(const struct POHPR &);
+
 private:
     void readSettings();
     QString Find_Text;
-
-
+    QSettings& Settings;
 };
 
 #endif // POHPR_W_H

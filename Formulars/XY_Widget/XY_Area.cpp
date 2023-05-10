@@ -1,10 +1,9 @@
+#include <QByteArray>
 #include "XY_Area.h"
 #include "ui_XY_Area.h"
-#include <QSettings>
-#include <QCoreApplication>
 
-XY_Area::XY_Area(QWidget *parent) :
-    QWidget(parent), ui(new Ui::XY_Area)
+XY_Area::XY_Area(QSettings& S, QWidget *parent) :
+    QWidget(parent), ui(new Ui::XY_Area), Settings{S}
 {
     ui->setupUi(this);
     readSettings();
@@ -27,15 +26,16 @@ XY_Area::XY_Area(QWidget *parent) :
 
 XY_Area::~XY_Area()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    settings.setValue("/Windows/XY_Formular/geometry", saveGeometry());
+    Settings.setValue("/Windows/XY_Formular/geometry", saveGeometry());
     delete ui;
 }
 
 void XY_Area::readSettings()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    restoreGeometry(settings.value("/Windows/XY_Formular/geometry").toByteArray());
+    const QByteArray geometry = Settings.value("/Windows/XY_Formular/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
 }
 
 void XY_Area::Clear()

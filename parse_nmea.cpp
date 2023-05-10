@@ -2,7 +2,6 @@
 #include <QStringList>
 #include <stdio.h>
 
-
 Parse_NMEA::Parse_NMEA(QMenu *menu, QObject *parent) :
     QObject(parent)
 {
@@ -18,16 +17,15 @@ Parse_NMEA::Parse_NMEA(QMenu *menu, QObject *parent) :
 void Parse_NMEA::Parse(const QString &Text_NMEA)
 {
     NMEA_D = NMEA_Data_Settings;
-
     char data[4096];
     memset(data, 0, 4096);
 
     strcpy(data, Text_NMEA.toLocal8Bit().data());
 
     nmea_recv(&ctx, data, strlen(data), &NMEA_D);
-
-    if(NMEA_D.GPGGA.longitude && NMEA_D.GPGGA.latitude)
+    if(NMEA_D.GPGGA.longitude && NMEA_D.GPGGA.latitude) {
         emit Parse_GPGGA_Signal(NMEA_D.GPGGA);
+    }
 
     if(NMEA_D.POHPR.time && NMEA_D.POHPR.status)
         emit Parse_POHPR_Signal(NMEA_D.POHPR);

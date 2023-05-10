@@ -9,7 +9,6 @@
 #include <QGridLayout>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
-#include <QDoubleSpinBox>
 #include <QSettings>
 #include "Visual_Coord.h"
 
@@ -17,10 +16,14 @@ class Coord_QW : public QWidget
 {
     Q_OBJECT
 public:
-    Coord_QW(QSettings &, QWidget *parent = 0);
+    Coord_QW(QSettings &, QWidget *parent = 0, Qt::WindowFlags f = Qt::WindowFlags());
     ~Coord_QW();
+
+    double getAverageLat() { return A_Lat; }
+    double getAverageLong() { return A_Long; }
+
 private:
-    QSettings *Settings;
+    QSettings& Settings;
     QFont FON;
     Visual_Coord *visual_coord;
 
@@ -51,8 +54,10 @@ private:
     unsigned size;
 
     void Read_Setting();
+
 public slots:
     void Parse_GPGGA_Slot(const struct GPGGA &);
+
 private slots:
     void Clear_Slot();
     void Set_Center();

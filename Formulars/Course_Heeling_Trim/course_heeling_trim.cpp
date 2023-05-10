@@ -3,13 +3,11 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
-#include <QSettings>
-#include <QCoreApplication>
-
+#include <QByteArray>
 #include <math.h>
 
-Course_Heeling_Trim::Course_Heeling_Trim(QWidget *parent) :
-    QWidget(parent)
+Course_Heeling_Trim::Course_Heeling_Trim(QSettings& S, QWidget *parent)
+    : QWidget(parent), Settings{S}
 {
     this->setMaximumSize(215, 570);
     readSettings();
@@ -30,14 +28,15 @@ Course_Heeling_Trim::Course_Heeling_Trim(QWidget *parent) :
 
 Course_Heeling_Trim::~Course_Heeling_Trim()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    settings.setValue("/Windows/CHT/geometry", saveGeometry());
+    Settings.setValue("/Windows/CHT/geometry", saveGeometry());
 }
 
 void Course_Heeling_Trim::readSettings()
 {
-    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
-    restoreGeometry(settings.value("/Windows/CHT/geometry").toByteArray());
+    const QByteArray geometry = Settings.value("/Windows/CHT/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
 }
 
 void Course_Heeling_Trim::Parse_POHPR_Slot(const struct POHPR &POHPR)

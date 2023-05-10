@@ -16,6 +16,7 @@
 #include <Formulars/POUGT/POUGT_Formular.h>
 #include <Formulars/RMC_Formular.h>
 #include <Formulars/XY_Widget/XY_Area.h>
+#include <Formulars/DrawGPS/drawgps.h>
 #include "serialportaction.h"
 
 extern const QIcon ICON[5];
@@ -44,10 +45,12 @@ public:
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
 public slots:
     void Show_Hide_Slot(bool);
     void actTriggered(SerialPortAction*);
     void addNewPort();
+
 private slots:
     void closeSerialPort(SerialPortAction* action);
     void about();
@@ -55,6 +58,7 @@ private slots:
     void Resize_Slot(const QSize &);
     void Language_Change(QAction*);
 //    void ZDA_Slot(const struct POHPR &);
+
 private:
     void initAddDeleteActions();
     void addPorts(int);
@@ -83,12 +87,14 @@ private:
     POUGT_Formular      *POUGT_F;
     RMC_Formular        *RMC_F;
     XY_Area             *XY_Wid;
+    DrawGPS             *draw_GPS;
 
     int portsNumber;
     SerialPortAction* paddAction;
     SerialPortAction* pDeleteAction;
     QList<SettingsDialog*> serialPorts;
-    QList<QVector<SerialPortAction*>> serialPortActions;
+    QList<QList<SerialPortAction*>> serialPortActions;
+
 protected:
     void closeEvent(QCloseEvent *);
 };

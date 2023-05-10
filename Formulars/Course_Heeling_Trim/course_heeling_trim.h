@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QSettings>
 
 #include "lib/NMEA_Struct.h"
 #include "Course/Course_QW.h"
@@ -14,11 +15,12 @@ class Course_Heeling_Trim : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Course_Heeling_Trim(QWidget *parent = 0);
+    explicit Course_Heeling_Trim(QSettings&, QWidget *parent = 0);
     ~Course_Heeling_Trim();
     
 signals:
     void Hide_Signal(const QSize &);
+
 public slots:
     void Parse_POHPR_Slot(const struct POHPR &);
 
@@ -28,6 +30,7 @@ private:
     Course_QW *course;
     Roll_QW *roll;
     Pitch_QW *pitch;
+    QSettings& Settings;
 };
 
 #endif // COURSE_HEELING_TRIM_H

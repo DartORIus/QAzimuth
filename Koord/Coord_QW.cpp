@@ -204,6 +204,7 @@ void Coord_QW::Parse_GPGGA_Slot(const struct GPGGA &GPGGA)
     Dost_VL->setFont(FON);
 
     visual_coord->animate(GPGGA);
+    Set_Center();
 }
 
 void Coord_QW::Clear_Slot()

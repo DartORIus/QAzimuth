@@ -14,9 +14,9 @@ class Visual_Coord : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Visual_Coord(QWidget *parent = 0);
+    explicit Visual_Coord(QWidget* parent = 0);
 protected:
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent* );
 public slots:
     void animate(const struct GPGGA &);
     void Change_Mash_Slot(double);

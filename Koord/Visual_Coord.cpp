@@ -2,13 +2,13 @@
 #include <QPainter>
 #include <math.h>
 
-Visual_Coord::Visual_Coord(QWidget *parent) :
+Visual_Coord::Visual_Coord(QWidget* parent) :
     QWidget(parent), graf_lenght(320), graf_height(320), Mash(50)
 {
     setFixedSize(graf_lenght, graf_height);
 }
 
-void Visual_Coord::paintEvent(QPaintEvent *event)
+void Visual_Coord::paintEvent(QPaintEvent* event)
 {
     QPainter pain;
         pain.begin(this);
@@ -60,7 +60,7 @@ void Visual_Coord::paintEvent(QPaintEvent *event)
         {
             int y = int((Koord.Lat_List[i]  - Koord.Center_Lat)*Grad_to_M*Mash);
             int x = int((Koord.Long_List[i] - Koord.Center_Long)
-                           *Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
+                          * Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
 
             Koord_paint.drawPoint(x, -y);
         }
@@ -75,7 +75,7 @@ void Visual_Coord::paintEvent(QPaintEvent *event)
 
         int y = int((Koord.Average_Lat  - Koord.Center_Lat)*Grad_to_M*Mash);
         int x = int((Koord.Average_Long - Koord.Center_Long)
-                       *Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
+                      * Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
 
         Average.drawEllipse(x-5, -y-5, 10, 10);
     Average.end();
@@ -90,7 +90,7 @@ void Visual_Coord::paintEvent(QPaintEvent *event)
         {
             y = int((Koord.Lat_List.last()  - Koord.Center_Lat)*Grad_to_M*Mash);
             x = int((Koord.Long_List.last() - Koord.Center_Long)
-                     *Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
+                    * Grad_to_M*cos(Koord.Center_Lat*Grad_to_Rad)*Mash);
 
         }
         Current.drawEllipse(x-5, -y-5, 10, 10);

@@ -3,23 +3,23 @@
 #include <math.h>
 #include <QByteArray>
 
-Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
+Coord_QW::Coord_QW(QSettings &S, QWidget* parent, Qt::WindowFlags f) :
     QWidget(parent, f), Settings{S}, A_Lat{0}, A_Long{0}, size{0}
 {
-    QLabel *Time_L         = new QLabel(tr("Time:"));
-    QLabel *Satelits_L     = new QLabel(tr("Satelits:"));
-    QLabel *Current_Coord  = new QLabel(tr("Current coordinates: "));
+    QLabel* Time_L         = new QLabel(tr("Time:"));
+    QLabel* Satelits_L     = new QLabel(tr("Satelits:"));
+    QLabel* Current_Coord  = new QLabel(tr("Current coordinates: "));
 
     FON.setBold(true);
     Current_Coord->setFont(FON);
-    QLabel *Lat_L          = new QLabel(tr("Latitude: "));
-    QLabel *Long_L         = new QLabel(tr("Longitude: "));
-    QLabel *Average_Coord  = new QLabel(tr("Average coordinates: "));
+    QLabel* Lat_L          = new QLabel(tr("Latitude: "));
+    QLabel* Long_L         = new QLabel(tr("Longitude: "));
+    QLabel* Average_Coord  = new QLabel(tr("Average coordinates: "));
     Average_Coord->setFont(FON);
-    QLabel *Average_Lat_L  = new QLabel(tr("Latitude: "));
-    QLabel *Average_Long_L = new QLabel(tr("Longitude: "));
-    QLabel *RMS_L          = new QLabel(tr("RMSD: "));
-    QLabel *Scale          = new QLabel(tr("Scale: "));
+    QLabel* Average_Lat_L  = new QLabel(tr("Latitude: "));
+    QLabel* Average_Long_L = new QLabel(tr("Longitude: "));
+    QLabel* RMS_L          = new QLabel(tr("RMSD: "));
+    QLabel* Scale          = new QLabel(tr("Scale: "));
 
     Time_VL         = new QLabel("0");
     Satelits_VL     = new QLabel("0");
@@ -30,7 +30,7 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
     Average_Lat_VL  = new QLabel("0");
     RMS_VL          = new QLabel("0");
 
-    QLabel *Lat_Spin_Label = new QLabel(tr("Lat:"));
+    QLabel* Lat_Spin_Label = new QLabel(tr("Lat:"));
     Lat_Spinbox = new QDoubleSpinBox();
         Lat_Spinbox->setMaximum(-90);
         Lat_Spinbox->setMaximum(90);
@@ -38,7 +38,7 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
         Lat_Spinbox->setDecimals(7);
         Lat_Spinbox->setSingleStep(0.0000001);
 
-    QLabel *Long_Spin_Label = new QLabel(tr("Long:"));
+    QLabel* Long_Spin_Label = new QLabel(tr("Long:"));
     Long_Spinbox = new QDoubleSpinBox();
         Long_Spinbox->setMaximum(-180);
         Long_Spinbox->setMaximum(180);
@@ -46,7 +46,7 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
         Long_Spinbox->setDecimals(7);
         Long_Spinbox->setSingleStep(0.0000001);
 
-    QPushButton *Set_Center_Button = new QPushButton(tr("Set Center"));
+    QPushButton* Set_Center_Button = new QPushButton(tr("Set Center"));
 
     Scale_Spinbox    = new QDoubleSpinBox();
        Scale_Spinbox->setMaximum(100000);
@@ -54,9 +54,9 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
        Scale_Spinbox->setValue(2);
 //       Scale_Spinbox->setFixedWidth(100);
 
-    QPushButton *Clear_B = new QPushButton(tr("Clear"));
+    QPushButton* Clear_B = new QPushButton(tr("Clear"));
 
-    QGridLayout *grid_l = new QGridLayout();
+    QGridLayout* grid_l = new QGridLayout();
     grid_l->addWidget(Time_L,           1, 0);
     grid_l->addWidget(Time_VL,          1, 1);
     grid_l->addWidget(Satelits_L,       2, 0);
@@ -81,7 +81,7 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
 
     visual_coord = new Visual_Coord();
 
-    QGridLayout *grid_Graf = new QGridLayout();
+    QGridLayout* grid_Graf = new QGridLayout();
         grid_Graf->addWidget(visual_coord,     0, 0, 1, 4);
         grid_Graf->addWidget(Lat_Spin_Label,   1, 0, Qt::AlignRight);
         grid_Graf->addWidget(Lat_Spinbox,      1, 1, Qt::AlignLeft);
@@ -91,7 +91,7 @@ Coord_QW::Coord_QW(QSettings &S, QWidget *parent, Qt::WindowFlags f) :
         grid_Graf->setColumnStretch(1, 2);
         grid_Graf->setColumnStretch(3, 2);
 
-    QHBoxLayout *qhb = new QHBoxLayout();
+    QHBoxLayout* qhb = new QHBoxLayout();
     qhb->addLayout(grid_Graf);
     qhb->addLayout(grid_l);
     qhb->addStretch(1);
@@ -177,7 +177,7 @@ void Coord_QW::Parse_GPGGA_Slot(const struct GPGGA &GPGGA)
     Average_Long_VL->setText(Average_Long + GPGGA.lon);
 
     double RMS_Lat =  (this->A_Lat  - GPGGA.latitude)*Grad_to_M;
-    double RMS_Long = (this->A_Long - GPGGA.longitude) *Grad_to_M*cos(this->A_Lat);
+    double RMS_Long = (this->A_Long - GPGGA.longitude)* Grad_to_M*cos(this->A_Lat);
 
     double Distance = RMS_Lat*RMS_Lat + RMS_Long*RMS_Long;
 

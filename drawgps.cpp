@@ -35,6 +35,7 @@ DrawGPS::~DrawGPS()
 
 void DrawGPS::closeEvent(QCloseEvent* event)
 {
+    Q_UNUSED(event)
     if (coord) {
         coord->close();
     }
@@ -265,7 +266,8 @@ void DrawGPS::slotOpenBenchmarkFile()
                     NMEA_D = NMEA_Data_Settings;
                     char data2[4096];
                     memset(data2, 0, 4096);
-                    strcpy(data2, Text_NMEA.toLocal8Bit().data());
+//                    strcpy(data2, Text_NMEA.toLocal8Bit().data());
+                    strncpy(data2, Text_NMEA.toLocal8Bit().data(), sizeof(data2));
                     nmea_recv(&ctx, data2, strlen(data2), &NMEA_D);
                     if(NMEA_D.GPGGA.latitude && NMEA_D.GPGGA.longitude) {
                         coord->Parse_GPGGA_Slot(NMEA_D.GPGGA);
@@ -312,7 +314,7 @@ void DrawGPS::createData(const QString& fileName, QMap<int, QList<double> >* pma
                     NMEA_D = NMEA_Data_Settings;
                     char data2[4096];
                     memset(data2, 0, 4096);
-                    strcpy(data2, Text_NMEA.toLocal8Bit().data());
+                    strncpy(data2, Text_NMEA.toLocal8Bit().data(), sizeof(data2));
                     nmea_recv(&ctx, data2, strlen(data2), &NMEA_D);
                     if(NMEA_D.GPGGA.latitude && NMEA_D.GPGGA.longitude) {
                         (*pmap)[static_cast<int>(NMEA_D.GPGGA.time)] = QList<double>{NMEA_D.GPGGA.latitude, NMEA_D.GPGGA.longitude};

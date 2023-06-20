@@ -16,7 +16,7 @@ class Coord_QW : public QWidget
 {
     Q_OBJECT
 public:
-    Coord_QW(QSettings &, QWidget *parent = 0, Qt::WindowFlags f = Qt::WindowFlags());
+    Coord_QW(QSettings &, QWidget* parent = 0, Qt::WindowFlags f = Qt::WindowFlags());
     ~Coord_QW();
 
     double getAverageLat() { return A_Lat; }
@@ -25,7 +25,7 @@ public:
 private:
     QSettings& Settings;
     QFont FON;
-    Visual_Coord *visual_coord;
+    Visual_Coord* visual_coord;
 
     QString Time;
     QString Long;
@@ -35,18 +35,18 @@ private:
     QString Average_Long;
     QString Average_Lat;
 
-    QLabel *Time_VL;
-    QLabel *Long_VL;
-    QLabel *Lat_VL;
-    QLabel *Satelits_VL;
-    QLabel *Dost_VL;
-    QLabel *Average_Long_VL;
-    QLabel *Average_Lat_VL;
-    QLabel *RMS_VL;
+    QLabel* Time_VL;
+    QLabel* Long_VL;
+    QLabel* Lat_VL;
+    QLabel* Satelits_VL;
+    QLabel* Dost_VL;
+    QLabel* Average_Long_VL;
+    QLabel* Average_Lat_VL;
+    QLabel* RMS_VL;
 
-    QDoubleSpinBox *Lat_Spinbox;
-    QDoubleSpinBox *Long_Spinbox;
-    QDoubleSpinBox *Scale_Spinbox;
+    QDoubleSpinBox* Lat_Spinbox;
+    QDoubleSpinBox* Long_Spinbox;
+    QDoubleSpinBox* Scale_Spinbox;
 
     double A_Lat;
     double A_Long;
